@@ -3,7 +3,7 @@ const Mailgen = require("mailgen");
 
 module.exports = {
     getbill: async (req, res) => {
-        const { userEmail } = req.body;
+        const { userEmail, mydescription, mymedecine, myprice, myname } = req.body;
 
         let transporter = nodemailer.createTransport({
             service: "gmail",
@@ -17,27 +17,27 @@ module.exports = {
         });
 
         let MailGenerator = new Mailgen({
-            theme: "default",
+            theme: 'salted',
             product: {
                 name: "Medico App",
-                link: "https://mailgen.js",
+                link: "https://medicoapp.com/",
             },
         });
 
         let response = {
             body: {
-                name: "Medico App",
+                name: myname,
                 intro: "Your bill has arrived!",
                 table: {
                     data: [
                         {
-                            item: "Nodemailer Stack Book",
-                            description: "A Backend application",
-                            price: "$10.99",
+                            Medecine: mymedecine,
+                            description: mydescription,
+                            price: myprice,
                         },
                     ],
                 },
-                outro: "Looking forward to doing more business",
+                outro: "Thank you for your purchase!",
             },
         };
 

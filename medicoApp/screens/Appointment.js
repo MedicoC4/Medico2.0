@@ -22,7 +22,6 @@ export default function DateSelection() {
       const data = newDates.map((date) => ({ day: date }));
       try {
         const email = auth.currentUser.email;
-console.log(email);
         await axios.post(
           `http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/day/${email}`,
           data
@@ -87,6 +86,7 @@ console.log(email);
           `http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/aivability/${email}`
         );
         setDocDate(data.data.Days);
+        console.log(data.data.Days);
       } catch (error) {
         console.error("Error fetching appointments:", error);
         throw new Error(error);

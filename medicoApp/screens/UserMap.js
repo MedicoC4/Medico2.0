@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import {
   StyleSheet,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Button,
   Modal,
+  ScrollView
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
@@ -21,8 +22,14 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-
 import axios from "axios";
+import * as Animatable from 'react-native-animatable';
+import { BlurView } from 'expo-blur';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import DoctorMap from "../components/DoctorMap.js"
+import ProductMap from "../components/ProductMap.js"
+import PharmacyMap from "../components/PharmacyMap.js"
+
 
 const UserMap = () => {
   const [radiusInMeters, setRadiusInMeters] = useState(20000);
@@ -36,6 +43,11 @@ const UserMap = () => {
   const [coordinatesData, setCoordnatesData] = useState([]);
   const [mapLocation, setMapLocation] = useState(null);
   const [markerId, setMarkId] = useState(0);
+  const [modalFilterSecButton, setModalFilterSecButton] = useState(false);
+  const [conditionFilter,setConditionFilter] = useState("")
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [scannedData, setScannedData] = useState(null);
   const [location, setLocation] = useState({
     latitude: 0, // You can replace these with your default values
     longitude: 0,
@@ -52,7 +64,14 @@ const UserMap = () => {
   //   const mapApiKey = Config.MAP_API
   const [mapFilterData, setMapFilterData] = useState("all");
   const [mapData, setMapData] = useState([]);
-  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", markerId);
+  const dropdownRefFilter = useRef(null);
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
+console.log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",coordinatesData);
+
+  /////////////////////////////////////////////////////////////////////////
+const dataPharmacies = (e)=>{
+  setCoordnatesData(e)
+}
 
   const getData = async () => {
     if (mapFilterData === "all") {
@@ -153,20 +172,20 @@ const UserMap = () => {
   //     // Add more details
   //   },
   // ];
-  const structureData = () => {
-    let data = [];
-    mapData.forEach((e) => {
-      data.push({
-        latitude: e.latitude,
-        longitude: e.longitude,
-        type: e.type,
-        name: e.fullname || e.PHname,
-        id:e.id
-        // imageUrl: e.imageUrl,
-      });
-    });
-    setCoordnatesData(data);
-  };
+  // const structureData = () => {
+  //   let data = [];
+  //   mapData.forEach((e) => {
+  //     data.push({
+  //       latitude: e.latitude,
+  //       longitude: e.longitude,
+  //       type: e.type,
+  //       name: e.fullname || e.PHname,
+  //       id: e.id,
+  //       // imageUrl: e.imageUrl,
+  //     });
+  //   });
+  //   setCoordnatesData(data);
+  // };
 
   const getTime = async (desLat, desLong) => {
     if (location && destination) {
@@ -209,10 +228,11 @@ const UserMap = () => {
   const calculateDistance = (start, end) => {
     return haversine(start, end, { unit: "meter" });
   };
-  // Filter the doctors within the specified radius
   const doctorsWithinRadius = coordinatesData.filter((doc) => {
-    const distance = calculateDistance(location, doc);
+    const distance = calculateDistance(location, {latitude:doc.latitude,longitude:doc.longitude});
+    console.log("===============>",distance <= radiusInMeters);
     return distance <= radiusInMeters;
+
   });
 
   const handleMarkerPress = (marker) => {
@@ -220,22 +240,74 @@ const UserMap = () => {
     setModalVisible(true);
   };
 
+  // const toggleDropdown = () => {
+  //   if (isDropdownVisible) {
+  //     dropdownRefFilter.current.fadeOutLeftBig(900).then(() => {
+  //       setDropdownVisible(false);
+  //     });
+  //   } else {
+  //     setDropdownVisible(true);
+  //     dropdownRefFilter.current.slideInLeft(900).then(() => {
+  //       setDropdownVisible(true);
+  //     });
+  //   }
+  // };
+  const showDropdownMode = () => {
+    setDropdownVisible(true);
+    dropdownRefFilter.current.slideInLeft(900);
+};
+const hideDropdownMode = () => {
+  dropdownRefFilter.current.fadeOutLeftBig(900).then(() => {
+  setDropdownVisible(false);
+});
+};
+
+  const showMapModal = () => {
+    setMapModalVisible(true);
+  };
+
+  const hideMapModal = () => {
+    setMapModalVisible(false);
+  };
+
+  const openModal = () => {
+    setModalFilterSecButton(true);
+  };
+
+  const closeModal = () => {
+    setModalFilterSecButton(false);
+  };
+
   console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", coordinatesData);
 
+
+  console.log("doctorsWithinRadius:", doctorsWithinRadius);
+
+  
   useEffect(() => {
     getLocation();
-    getData();
-    structureData();
+    // getData();
+    // structureData();
   }, [location]);
   return (
+   
     <View style={styles.container}>
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         customMapStyle={customMapStyle}
+        followsUserLocation={true}
+        showsBuildings={true}
+        showsScale={true}
+        loadingEnabled={true}
+        pitchEnabled={true} // Enable pitch gestures
+        zoomControlEnabled	={true}
+        showsTraffic={true}
+        addressForCoordinate={true}
         initialRegion={mapRegion}
       >
         {doctorsWithinRadius.map((doct, i) => (
+          
           <Marker
             key={i}
             coordinate={doct}
@@ -250,14 +322,22 @@ const UserMap = () => {
               getTime(doct.latitude, doct.longitude);
               calculateDistanceMap(doct.latitude, doct.longitude);
             }}
-            pinColor={
-              doct.type === "doctor"
-                ? "red"
-                : doct.type === "nurse"
-                ? "blue"
-                : "yellow"
-            }
-          />
+            // pinColor="blue"
+          //   pinColor={
+          //     doct.type === "Pharmacy"
+          //       ? "red"
+          //       : doct.type === "doctor"
+          //       ? "blue"
+          //       :doct.type === "nurse"?"yellow":null
+          //   }
+          // />
+          pinColor={
+            doct.type === "Pharmacy" ? "red" :
+            doct.type === "doctor" ? "blue" :
+            doct.type === "nurse" ? "yellow" : 
+            doct.type === "Product"?"black":null
+          }
+        />
         ))}
         <Marker coordinate={location} pinColor="green" />
       </MapView>
@@ -284,6 +364,7 @@ const UserMap = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={{ position: "relative", top: -630, left: 170 }}
+          onPress={()=>openModal()}
         >
           <View>
             <AntDesign name="filter" size={40} color="#0bc991" />
@@ -316,15 +397,15 @@ const UserMap = () => {
           </TouchableOpacity>
         </View> */}
       </View>
-      <Slider
+      {/* <Slider
         style={{ width: 300 }}
         minimumValue={1000}
         maximumValue={30000}
         step={1000}
         value={radiusInMeters}
         onValueChange={(value) => setRadiusInMeters(value)}
-      />
-      <Text>Radius: {radiusInMeters / 1000} Km</Text>
+      /> */}
+      {/* <Text>Radius: {radiusInMeters / 1000} Km</Text> */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -333,109 +414,195 @@ const UserMap = () => {
       >
         <View style={styling.modalContainer}>
           <View style={styling.modal}>
-            <View style={styling.modalContent}>
-              <View style={styling.modalHeader}>
-                <View style={styling.modalImage}>
-                  <Image
-                    source={{ uri: selectedMarker?.imageUrl }}
-                    style={styling.imageHw}
-                  />
-                </View>
-                <View style={{ gap: 10 }}>
-                  <Text style={styling.modalText}>
-                    Name: {selectedMarker?.name}
-                  </Text>
-                  <Text style={styling.modalText}>
-                    Type: {selectedMarker?.type}
-                  </Text>
-                  <Text style={styling.modalText}>
-                    {/* Specialty: {selectedMarker?.specialty} */}
-                  </Text>
-                </View>
-              </View>
-              <View>
-                <View>
-                  {/* <View
-                    style={{ flexDirection: "row", justifyContent: "center" }}
-                  >
-                    
-                    <Text style={styling.modalText}>Estimated Duration:</Text>
-                  </View> */}
+            <View
+              style={{
+                height: "65%",
+                width: "100%",
+                alignItems: "center",
+                paddingTop: 10,
+                justifyContent: "space-between",
+                flexDirection: "column",
+                paddingBottom:20
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "yellow",
+                  height: 150,
+                  width: 150,
+                  borderRadius: 200,
+                }}
+              ></View>
+              <View
+                style={{
+                  height: "25%",
+                  width: "100%",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexDirection:"column",
+                }}
+              >
+                <View
+                  style={{  height: "50%", width: "100%",justifyContent:"center",alignItems:"center" }}
+                >
+                  <Text style={{textAlign:"center",fontSize:27,fontWeight:"bold"}}>Anna Williams</Text>
+                  </View>
                   <View
-                    style={{
-                      flexDirection: "row",
-                      gap: 8,
-                      position: "absolute",
-                      left: 70,
-                      top: 5,
-                    }}
+                    style={{  height: "50%", width: "100%",justifyContent:"center",alignItems:"center" }}
                   >
-                    <Ionicons
-                      name="md-timer-outline"
-                      size={24}
-                      color="#0bc991"
-                    />
-                    <Text style={styling.modalText}>
-                      Estimated Duration: {duration}
-                    </Text>
+                    <Text style={{textAlign:"center",fontSize:22}}>anna.williams@com</Text>
+                  </View>
+              </View>
+            </View>
+                <View style={{height:"20%",flexDirection:"row"}}>
+                  <View style={{height:"100%",width:"55%",justifyContent:"space-around"}}>
+                    <View style={{height:"40%",paddingLeft:30,alignItems:"center",flexDirection:"row"}}>
+                      <View style={{paddingRight:13}}><MaterialCommunityIcons name="map-marker-distance"size={27}color="#0bc991"/></View>
+                      <Text style={{paddingRight:5,fontSize:14}} >Distance:</Text>
+                      <Text fontSize={{fontSize:14}}>50 Km</Text>
+                    </View>
+                    <View style={{height:"40%",paddingLeft:30,alignItems:"center",flexDirection:"row"}}>
+                    <View style={{paddingRight:13}}><MaterialIcons name="timer" size={27} color="#0bc991" /></View>
+                      <Text style={{paddingRight:28,fontSize:14}}>Time:</Text>
+                      <Text fontSize={{fontSize:14}} >26 min</Text>
+                    </View>
+                  </View>
+                  <View style={{height:"100%",width:"45%",justifyContent:"center",alignItems:"center"}}>
+                    <TouchableOpacity style={{height:"70%",width:"90%",backgroundColor:"pink",borderRadius:70,justifyContent:"center",alignItems:"center"}}><Text>Go Profile</Text></TouchableOpacity>
                   </View>
                 </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 8,
-                    position: "absolute",
-                    left: 70,
-                    top: 40,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="map-marker-distance"
-                    size={24}
-                    color="#0bc991"
-                  />
-                  <Text style={styling.modalText}>
-                    Estimated Distance: {distance}
-                  </Text>
+                <View style={{height:"15%",alignItems:"center",justifyContent:"center"}}>
+                  <TouchableOpacity style={{backgroundColor:"green",height:"90%",width:"45%",borderRadius:70,justifyContent:"center",alignItems:"center"}}><Text>Close</Text></TouchableOpacity>
                 </View>
-              </View>
-            </View>
-            <View style={styling.modalActions}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#0ebe7f",
-                  padding: 15,
-                  borderRadius: 10,
-                  flex: 1,
-                  marginLeft: 5,
-                }}
-                onPress={() => setMarkId(selectedMarker?.id)}
-              >
-                <Text
-                  style={{ color: "white", textAlign: "center", fontSize: 16 }}
-                >
-                  Go To
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Button
-              title="Close"
-              onPress={() => {
-                setModalVisible(false);
-              }}
-              style={{
-                backgroundColor: "#0ebe7f",
-                padding: 15,
-                borderRadius: 10,
-                flex: 1,
-                marginLeft: 5,
-              }}
-            />
+           
           </View>
         </View>
       </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalFilterSecButton}
+        onRequestClose={closeModal}
+      >
+        <View style={filterCss.modalContainer}>
+          <View style={filterCss.modalContent}>
+            {/* <TouchableOpacity ><MaterialCommunityIcons name="barcode-scan" size={24} color="black" /></TouchableOpacity> */}
+         <View style={{width:"100%",height:50,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:43,color:"rgba(0, 0, 0, 0.575)"}}>Filter</Text></View>
+         <View style={{height:420,width:"100%"}}>
+         <View style={{flexDirection:"row",gap:5,width:"100",justifyContent:"center",height:105,alignItems:"center"}}>       
+                 {conditionFilter === "doctor"? <TouchableOpacity onPress={()=>setConditionFilter("doctor")} style={{backgroundColor:"#09d3a2",shadowOffset:{width:5,height:0},shadowOpacity:0.5,shadowRadius:5,elevation:5,height:100,width:100,borderRadius:8,flexDirection:"column",gap:2,alignItems:"center"}}>
+                  <View style={{width:"100%",height:70,width:70,justifyContent:"center",alignItems:"center"}}>
+                    <Image style={{height:40,width:40}} source={require("../assets/stethoscopeWhite.png")}/>
+                  </View>
+                  <View style={{width:"100%",height:25,width:90,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:14,color:"white"}}>Doctor</Text></View>
+                  </TouchableOpacity>:<TouchableOpacity onPress={()=>setConditionFilter("doctor")} style={{backgroundColor:"#F5F5F5",shadowOffset:{width:5,height:0},shadowOpacity:0.5,shadowRadius:5,elevation:5,height:100,width:100,borderRadius:8,flexDirection:"column",gap:2,alignItems:"center"}}>
+                  <View style={{width:"100%",height:70,width:70,justifyContent:"center",alignItems:"center"}}>
+                    <Image style={{height:40,width:40}} source={require("../assets/stethoscopeGreen.png")}/>
+                  </View>
+                  <View style={{width:"100%",height:25,width:90,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:14}}>Doctor</Text></View>
+                  </TouchableOpacity>}
+
+
+                  {conditionFilter === "pharmacy"?<TouchableOpacity onPress={()=>setConditionFilter("pharmacy")} style={{backgroundColor:"#09d3a2",shadowOffset:{width:5,height:0},shadowOpacity:0.5,shadowRadius:5,elevation:5,height:100,width:100,borderRadius:8,flexDirection:"column",gap:2,alignItems:"center"}}>
+                  <View style={{width:"100%",height:70,width:70,justifyContent:"center",alignItems:"center"}}>
+                    <Image style={{height:40,width:40}} source={require("../assets/caduceusWhite.png")}/>
+                  </View>
+                  <View style={{width:"100%",height:25,width:90,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:14,color:"white"}}>Pharmacy</Text></View>
+                  </TouchableOpacity>:<TouchableOpacity onPress={()=>setConditionFilter("pharmacy")} style={{backgroundColor:"#F5F5F5",shadowOffset:{width:5,height:0},shadowOpacity:0.5,shadowRadius:5,elevation:5,height:100,width:100,borderRadius:8,flexDirection:"column",gap:2,alignItems:"center"}}>
+                  <View style={{width:"100%",height:70,width:70,justifyContent:"center",alignItems:"center"}}>
+                    <Image style={{height:40,width:40}} source={require("../assets/caduceusGreen.png")}/>
+                  </View>
+                  <View style={{width:"100%",height:25,width:90,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:14}}>Pharmacy</Text></View>
+                  </TouchableOpacity>}
+                  {conditionFilter === "product"?<TouchableOpacity onPress={()=>setConditionFilter("product")} style={{backgroundColor:"#09d3a2",shadowOffset:{width:5,height:0},shadowOpacity:0.5,shadowRadius:5,elevation:5,height:100,width:100,borderRadius:8,flexDirection:"column",gap:2,alignItems:"center"}}>
+                  <View style={{width:"100%",height:70,width:70,justifyContent:"center",alignItems:"center"}}>
+                    <Image style={{height:40,width:40}} source={require("../assets/drugWhite.png")}/>
+                  </View>
+                  <View style={{width:"100%",height:25,width:90,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:14,color:"white"}}>Medicines</Text></View>
+                  </TouchableOpacity>:<TouchableOpacity onPress={()=>setConditionFilter("product")} style={{backgroundColor:"#F5F5F5",shadowOffset:{width:5,height:0},shadowOpacity:0.5,shadowRadius:5,elevation:5,height:100,width:100,borderRadius:8,flexDirection:"column",gap:2,alignItems:"center"}}>
+                  <View style={{width:"100%",height:70,width:70,justifyContent:"center",alignItems:"center"}}>
+                    <Image style={{height:40,width:40}} source={require("../assets/drugGreen.png")}/>
+                  </View>
+                  <View style={{width:"100%",height:25,width:90,justifyContent:"center",alignItems:"center"}}><Text style={{fontWeight:"bold",fontSize:14}}>Medicines</Text></View>
+                  </TouchableOpacity>}
+                 
+          </View>
+                <View style={{height:315,width:"100%",paddingTop:10}}>
+                <ScrollView>
+                {conditionFilter === "doctor" ? <DoctorMap dataPharmacies={dataPharmacies}/>:
+                conditionFilter === "pharmacy" ? <PharmacyMap dataPharmacies={dataPharmacies}/>:
+                conditionFilter === "product" ? <ProductMap dataPharmacies={dataPharmacies} closeModal={closeModal} openModal={openModal}/> : null
+                }
+                </ScrollView>
+                </View>
+         </View>
+           <View style={{flexDirection:"column",gap:8}}>
+      <View style={{flexDirection:"row",justifyContent:"space-between",paddingLeft:20,paddingRight:20}}>
+            <Text style={{ color: "rgba(0, 0, 0, 0.875)",
+                              fontWeight: "thin",
+                              fontSize: 20,}}>Distance: </Text>
+            <Text style={{ color: "#007260",
+                              fontWeight: "bold",
+                              fontSize: 20,}}>{radiusInMeters / 1000} Km</Text>
+            </View>
+            <Slider
+        style={{ width: 300 }}
+        minimumValue={1000}
+        maximumValue={30000}
+        step={1000}
+        value={radiusInMeters}
+        onValueChange={(value) => setRadiusInMeters(value)}
+      />
       
+        </View>
+          <View style={{justifyContent:"center",alignItems:"center",width:"100%"}}>
+            <TouchableOpacity style={{width: "45%",
+                          backgroundColor: "white",
+                          height: 45,
+                          borderRadius: 50,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          borderWidth: 2,
+                          borderColor: "#007260",
+                          borderStyle: "solid",}} onPress={closeModal}>
+              <Text style={{
+                              color: "#007260",
+                              fontWeight: "bold",
+                              fontSize: 20,
+                            }}>Done</Text>
+            </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Animatable.View
+      ref={dropdownRefFilter}
+      style={{
+        position: 'absolute',
+        top: 80,
+        left: isDropdownVisible ? 0 : -310,
+        width: "80%",
+        height: "80%",
+        backgroundColor: 'transparent',
+        padding: 10,
+        borderRadius: 5,
+        elevation: 5,
+        justifyContent: 'center',
+        borderTopRightRadius: 50,
+        borderBottomRightRadius: 50,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 10,
+      }}
+   
+    >
+      <TouchableOpacity
+      onPress={()=>hideDropdownMode()}
+      ><Text>Close</Text></TouchableOpacity>
+    </Animatable.View>
     </View>
+
   );
 };
 
@@ -448,13 +615,16 @@ const styling = StyleSheet.create({
     alignItems: "center",
   },
   modal: {
-    height: "50%",
+    height: "60%",
     width: "100%",
     backgroundColor: "white",
     padding: 20,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
-    position: "relative",
+    flexDirection:"column",
+    backgroundColor:"rgba(0,140,0)"
+
+    // position: "relative",
   },
   modalContent: {
     flex: 1,
@@ -615,5 +785,30 @@ const stylesModal = StyleSheet.create({
   },
   modalButtonText: {
     color: "white", // Customize the button text color
+  },
+});
+
+const filterCss = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // semi-transparent background
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+    height:"85%",
+    width:"90%",
+    alignItems:"center",
+    justifyContent:"space-between"
+
   },
 });

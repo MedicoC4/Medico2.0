@@ -10,14 +10,16 @@ import {
 } from "react-native";
 import Button from "../components/Button";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-const { width } = Dimensions.get("window");
+const { width,height } = Dimensions.get("window");
 import COLORS from "../constants/colors";
 import { auth } from "../firebase-config";
 import { useSelector, useDispatch } from "react-redux";
 import { migrateDoctor, updateSpeciality } from "../redux/doctorSlicer";
-import { fetchCategories } from "../redux/categorySlicer";
+import { fetchSpeciality } from "../redux/speciality";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
+
+
 
 export default function UpgradeDocFirstForm({ navigation }) {
   const [fullName, setFullName] = useState("");
@@ -30,18 +32,22 @@ export default function UpgradeDocFirstForm({ navigation }) {
   const [type, setType] = useState(null);
   
 
-  const mapping = useSelector((state) => state.category.data );
-
-
+  // const mapping = useSelector((state) => state.speciality.data );
+  // console.log('this is the category',mapping);
   const typeOptions = ["Nurse", "Doctor"];
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchCategories());
+    dispatch(fetchSpeciality());
+    dispatch(updateSpeciality({
+     email : auth.currentUser.email,
+     specialityId: category
+    }));
+   
   }, []);
   
-  
+  console.log('eeeeeeeeeeeeeeeeee' , category);
 
   const docMigration = async () => {
     const email = auth.currentUser.email;
@@ -49,7 +55,6 @@ export default function UpgradeDocFirstForm({ navigation }) {
       fullname: fullName,
       type: type,
       age: age,
-      category: category,
       email: email,
       yx: yoex,
     };
@@ -72,6 +77,9 @@ export default function UpgradeDocFirstForm({ navigation }) {
 
         <KeyboardAwareScrollView>
           <View style={styles.form}>
+            <View style={{
+              alignItems:'center'
+            }}>
             <View style={styles.input}>
               <Text style={styles.inputLabel}>Full Name</Text>
 
@@ -113,7 +121,7 @@ export default function UpgradeDocFirstForm({ navigation }) {
             </View>
             <View style={{ width: width * 0.9, gap: 10, zIndex: 2, paddingBottom: 20 }}>
               <Text>Enter Your speciality :</Text>
-              <DropDownPicker
+              {/* <DropDownPicker
                 items={mapping.map((category) => ({
                   label: category.name,
                   value: category.id,
@@ -125,7 +133,8 @@ export default function UpgradeDocFirstForm({ navigation }) {
                 onSubmit={(e) => {
                   e.preventDefault();
                 }}
-              />
+                onPress={() => updateSpeciality(category)}
+              /> */}
             </View>
 
             <View style={styles.input}>
@@ -138,6 +147,7 @@ export default function UpgradeDocFirstForm({ navigation }) {
                 }}
                 style={styles.inputControl}
               />
+            </View>
             </View>
 
             <View style={styles.formAction}>
@@ -194,6 +204,7 @@ const styles = StyleSheet.create({
   formAction: {
     marginVertical: 24,
     zIndex: 0,
+    alignItems:'center'
   },
   formFooter: {
     fontSize: 15,
@@ -216,6 +227,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "#24262e",
+    borderWidth:1,
+    width:width*0.9
   },
   btnText: {
     fontSize: 17,

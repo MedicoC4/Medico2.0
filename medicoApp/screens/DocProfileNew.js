@@ -1,10 +1,8 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity,Dimensions,ImageBackground,FlatList,ScrollView,TextInput,Modal } from 'react-native'
+import { StyleSheet, Text, View, Image,TouchableOpacity,Dimensions,ImageBackground,ScrollView,TextInput,Modal } from 'react-native'
 import React,{useEffect,useState} from 'react'
 const {width,height}= Dimensions.get('window')
-import Button from '../components/Button'
 import COLORS from '../constants/colors'
 import NavigationBar from '../components/NavigationBar'
-import Icon from "react-native-vector-icons/FontAwesome";
 import ReviewCardDoctor from '../components/ReviewCardDoctor'
 import { AntDesign } from "@expo/vector-icons";
 import {fetchDocReviews} from '../redux/docReviewSlicer'
@@ -12,15 +10,22 @@ import { useDispatch, useSelector } from 'react-redux'
 import { createReview } from '../redux/docReviewSlicer';
 import { AirbnbRating } from 'react-native-ratings';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { Storage } from 'expo-storage'
 import { auth } from '../firebase-config'
+import { fetchDoctorData } from '../redux/doctorSlicer'
+import { Feather } from '@expo/vector-icons'; 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+
+import { signOut } from 'firebase/auth';
+import { logOut } from '../redux/userSlicer'
 
 
 
 
-
-
-const DocProfileNew = ({navigation,route}) => {
-
+const DocProfileNew = ({navigation}) => {
+  
+  
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -29,46 +34,64 @@ const DocProfileNew = ({navigation,route}) => {
   const [comment,setComment]=useState('')
   const [client,setClient]=useState(0)
   const dispatch=useDispatch()
-  
-  const {data} = route.params
-
-  console.log('is it included?',data);
-
+  const data = useSelector((state)=>state.doctor.oneDoc)
+  console.log('my data',data);
   const reviews=useSelector((state)=>state.docRev.data)
-  console.log('is it array ?',reviews);
+
+
+
   const fetchReviews= ()=>{
     dispatch(fetchDocReviews(data.id))
 }
 
-const retrieve = async ()=> {
-  const retrieved = await AsyncStorage.getItem("type")
-  setClient(JSON.parse(retrieved))
-  console.log("retrieved",JSON.parse(retrieved))
+const clearToken = async () => {
+  try {
+   const logOutType= await AsyncStorage.removeItem('type');
+   dispatch(logOut())
+ 
+   console.log('mecanique mnghir awre9',logOutType);
+
+  } catch (error) {
+    console.error('Error clearing token:', error);
+  }
+};
+
+
+
+  const logOutUser = async () => {
+    try {
+      await signOut(auth)
+       clearToken()
+      navigation.navigate('Login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  };
+
+const fetchData = async()=>{
+    try {
+      const emailUser=auth.currentUser.email
+      dispatch(fetchDoctorData(emailUser))
+      console.log('this is email doctor',emailUser);
+    } catch (error) {
+      console.log(error); 
+    }
 }
+
+
 const calculateAverage=()=>{
   const totalRating = reviews.reduce((acc, curr) => acc + curr.rating, 0)
   const averageRating = totalRating / reviews.length | 0
-  console.log('averageRating of this doctour',averageRating)
+
   return averageRating
 }
 
-const checkAuth =  () => {
-  const current=auth.currentUser.email
-    // const authToken = await AsyncStorage.getItem('token');
 
-    if (current === data.email) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-
-};
 
 useEffect(() => {
   fetchReviews()
-  retrieve()
   calculateAverage()
-  checkAuth()
+  fetchData()
 }, []);
 
 
@@ -96,6 +119,16 @@ const toggleModal = () => {
 };
 
 const renderDoctorProfile = () =>{
+  if (isLoggedIn === null|false) {
+    
+    return (
+      <View style={styles.loadingContainer}>
+        
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
   if(isLoggedIn){
     return (<View style={{
       display:'flex',
@@ -205,7 +238,7 @@ const renderDoctorProfile = () =>{
               <Image
               source={require('../assets/menu.png')}
               style={{
-                  width:width*0.08,
+                  width:width*0.1,
                   height:height*0.03
               }}
               />
@@ -241,7 +274,7 @@ const renderDoctorProfile = () =>{
                   <Text style={{
                       fontSize:20,
                       fontWeight:600
-                  }}>Dr. {data.Doctor.fullname}</Text>
+                  }}>Dr. {data.fullname}</Text>
                   <Text style={{
                       fontSize:15,
                       fontWeight:400,
@@ -267,7 +300,7 @@ const renderDoctorProfile = () =>{
                           />
                           <Text style={{
                               fontWeight:600
-                          }}>Doctor</Text>
+                          }}>{data.type}</Text>
                       </View>
                       <View style={{
                           paddingLeft:20,
@@ -307,7 +340,7 @@ const renderDoctorProfile = () =>{
                           color:COLORS.white,
                           fontSize:20,
                           fontWeight:600
-                      }}>5.0</Text>
+                      }}>{data.rating}</Text>
                   </View>
                   <Text style={{
                       color:COLORS.grey,
@@ -330,7 +363,7 @@ const renderDoctorProfile = () =>{
           paddingLeft:20,
           paddingRight:20,
           width:width*1,
-          height:height*0.5,
+          height:height*2.5,
           // alignItems:'center',
           
       }}>
@@ -401,7 +434,7 @@ const renderDoctorProfile = () =>{
     </View>
       </View>
       </ScrollView>
-      {/* <TextInput></TextInput> */}
+      
     <View style={{
       display:'flex',
       flexDirection:'row',
@@ -638,7 +671,7 @@ const renderDoctorProfile = () =>{
                           />
                           <Text style={{
                               fontWeight:600
-                          }}>Doctor</Text>
+                          }}>{data.type}</Text>
                       </View>
                       <View style={{
                           paddingLeft:20,
@@ -701,7 +734,7 @@ const renderDoctorProfile = () =>{
           paddingLeft:20,
           paddingRight:20,
           width:width*1,
-          height:height*0.5,
+          height:height*0.6,
           // alignItems:'center',
           
       }}>
@@ -711,7 +744,7 @@ const renderDoctorProfile = () =>{
             flexDirection: "row",
             width: "100%",
             justifyContent: "space-between",
-            height: height*0.08,
+            height: height*0.1,
             alignItems: "center",
           }}
         >
@@ -781,7 +814,138 @@ const renderDoctorProfile = () =>{
             flexDirection: "row",
             width: "100%",
             justifyContent: "space-between",
-            height: height*0.08,
+            height: height*0.1,
+            alignItems: "center",
+          }}
+          onPress={() =>navigation.navigate('appointement')}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              width: "55%",
+              gap: 23,
+              alignItems: "center",
+            }}
+          >
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 100,
+                shadowColor: "rgba(3, 3, 3, 0.1)",
+                shadowOffset: { width: 0, height: 2 },
+                shadowRadius: 4,
+                backgroundColor: "#ddf0ee",
+              }}
+            >
+              <View
+                style={{
+                  width: 60,
+                  height: 60,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderRadius: 100,
+                  shadowColor: "rgba(3, 3, 3, 0.1)",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowRadius: 4,
+                  backgroundColor: "#ddf0ee",
+                }}
+              >
+                <Feather name="calendar" size={28} color="#1a998e" />
+
+              </View>
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "bold" }}>
+            Availability
+            </Text>
+          </View>
+          <View
+            style={{}}
+          >
+            <AntDesign name="right" size={24} color="#1a998e" />
+          </View>
+        </TouchableOpacity>
+        <View
+          style={{
+            width: "100%",
+            height: 2,
+            backgroundColor: "#dedede",
+            borderRadius: 2,
+          }}
+        ></View>
+        <TouchableOpacity
+          style={{
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-between",
+            height: height*0.1,
+            alignItems: "center",
+          }}
+          onPress={() =>navigation.navigate('appointmentDoctor')}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              width: "55%",
+              gap: 23,
+              alignItems: "center",
+            }}
+          >
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 100,
+                shadowColor: "rgba(3, 3, 3, 0.1)",
+                shadowOffset: { width: 0, height: 2 },
+                shadowRadius: 4,
+                backgroundColor: "#ddf0ee",
+              }}
+            >
+              <View
+                style={{
+                  width: 60,
+                  height: 60,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderRadius: 100,
+                  shadowColor: "rgba(3, 3, 3, 0.1)",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowRadius: 4,
+                  backgroundColor: "#ddf0ee",
+                }}
+              >
+                <MaterialCommunityIcons name="calendar-multiple-check" size={27} color="#1a998e" />
+              </View>
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "bold" }}>
+            Appointements
+            </Text>
+          </View>
+          <View
+            style={{}}
+          >
+            <AntDesign name="right" size={24} color="#1a998e" />
+          </View>
+        </TouchableOpacity>
+        <View
+          style={{
+            width: "100%",
+            height: 2,
+            backgroundColor: "#dedede",
+            borderRadius: 2,
+          }}
+        ></View>
+        <TouchableOpacity
+          style={{
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-between",
+            height: height*0.1,
             alignItems: "center",
           }}
         >
@@ -847,7 +1011,7 @@ const renderDoctorProfile = () =>{
             flexDirection: "row",
             width: "100%",
             justifyContent: "space-between",
-            height: height*0.08,
+            height: height*0.1,
             
             alignItems: "center",
           }}
@@ -915,11 +1079,10 @@ const renderDoctorProfile = () =>{
             flexDirection: "row",
             width: "100%",
             justifyContent: "space-between",
-            height: height*0.08,
-            
-            // backgroundColor: "grey",
+            height: height*0.1,
             alignItems: "center",
           }}
+          onPress={()=>logOutUser()}
         >
           <View
             style={{
@@ -956,20 +1119,21 @@ const renderDoctorProfile = () =>{
                 }}
               >
                 <Image
-                  source={require("../assets/support.png")}
+                  source={require("../assets/logout.png")}
                   style={{
-                    width: 27,
-                    height: 27,
+                    width: 28,
+                    height: 28,
                   }}
                 />
               </View>
             </View>
-            <Text style={{ fontSize: 15, fontWeight: "bold" }}>Support</Text>
+            <Text style={{ fontSize: 15, fontWeight: "bold" }}>Log Out</Text>
           </View>
           <View>
             <AntDesign name="right" size={24} color="#1a998e" />
           </View>
         </TouchableOpacity>
+        
       </View>
       </ScrollView>
 
@@ -1017,5 +1181,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "column",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

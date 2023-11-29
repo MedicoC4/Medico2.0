@@ -1,5 +1,5 @@
 import { View, Text, Image , Pressable, TextInput, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from '../constants/colors';
 import { Ionicons } from "@expo/vector-icons";
@@ -7,9 +7,11 @@ import Checkbox from "expo-checkbox"
 import Button from '../components/Button';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {auth} from '../firebase-config';
-import { UseSelector,useDispatch } from 'react-redux';
+import { UseSelector,useDispatch, useSelector } from 'react-redux';
 import {signIn} from '../redux/userSlicer'
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const Login = ({ navigation }) => {
@@ -18,10 +20,11 @@ const Login = ({ navigation }) => {
     const [isChecked, setIsChecked] = useState(false);
     const [email,setEmail]=useState('');
     const [password,setPassword]=useState('')
-
+    const [updateType,setUpdateType]=useState(false)
+    const getType=useSelector(state=>state.getUser.data)
+ 
 
     const dispatch = useDispatch()
-
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -30,25 +33,28 @@ const Login = ({ navigation }) => {
         }
       
         try {
-          // Sign in with email and password
-        const hello=  await signInWithEmailAndPassword(auth, email, password);
-        if(hello._tokenResponse.idToken){
-            await AsyncStorage.setItem('token', hello._tokenResponse.idToken);
-            dispatch(signIn({email}))
-
-            setEmail('')
-            setPassword('')
-            
-            navigation.navigate('Landing');
-        }else {
-            alert('failed sign in')
-        }
-          // Redirect to the landing page after successful login
+          const hello = await signInWithEmailAndPassword(auth, email, password);
+          if(hello._tokenResponse.idToken){
+            const actionResult = await dispatch(signIn({email}));
+            const userType = actionResult.payload.type;
+      
+            if(userType){
+              console.log("type after login", userType);
+              await AsyncStorage.setItem('type', userType);
+              setEmail('');
+              setPassword('');
+              navigation.navigate('Landing');
+            }
+          } else {
+            alert('failed sign in');
+          }
         } catch (error) {
           console.error('Error during login:', error);
         }
       };
-    
+useEffect(()=>{
+    // checkType()
+},[])
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
             <View style={{ flex: 1, marginHorizontal: 22 }}>

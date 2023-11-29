@@ -3,7 +3,7 @@ import "./style.css";
 import SideNav from "../../components/sideNav/SideNav";
 import DataGrid from "../../components/dataGrid/dataGrid";
 import { collection, onSnapshot, query } from "firebase/firestore";
-import { DB } from "../../firebase-config";
+import { DB, auth } from "../../firebase-config";
 import { Timestamp } from "firebase/firestore";
 import { useNavigate } from "react-router";
 import ProductDetails from "../productDetails/ProductDetails";
@@ -24,10 +24,14 @@ const ProductOverview = () => {
     }
     return null;
   }
+  // console.log(auth.currentUser.email);
+  const usersaa = JSON.parse(localStorage.getItem('user'))
+  console.log(usersaa.email);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:1128/api/Product/getAll");
+      const user = auth?.currentUser?.email
+      const response = await axios.get(`http://127.0.0.1:1128/api/Product/phProduct/${usersaa.email}`);
       setData(response.data)
     } catch (error) {
       console.error("Error fetching data:", error.message);

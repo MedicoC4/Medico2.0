@@ -21,9 +21,9 @@ export default function UpgradeDocFirstForm({ navigation }) {
   const [pharmName, setPharmName] = useState("");
   const [adress, setAdress] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [types, setTypes] = useState("day");
+  const [types, setTypes] = useState("Day");
 
-  const pharmaTypes = ["night", "day"];
+  const pharmaTypes = ["Night", "Day"];
 
   const dispatch = useDispatch();
 
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     flexGrow: 1,
     flexShrink: 1,
-    flexBasis: 0,
+    flexBasis: 0
   },
   header: {
     paddingHorizontal: 24,
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingHorizontal: 24,
+    alignItems:'center'
   },
   formAction: {
     marginVertical: 24,
@@ -171,6 +172,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "#24262e",
+    borderWidth:1,
+    width:width*0.9
   },
   btnText: {
     fontSize: 17,

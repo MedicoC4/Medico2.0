@@ -3,8 +3,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const initialState = {
   data: [],
+  userInfo:{},
   error: null,
   loading: false,
+  selectedImage: null, // Add this line
 };
 
 
@@ -33,30 +35,46 @@ const deleteUser = createAsyncThunk('api/deleteUser',async(id, {dispatch})=>{
     return response.data
 })
 
-const updateUser=createAsyncThunk('api/updateUser',async(id,input,{dispatch})=>{
-    const response = await axios.delete(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/user/updateUser/:${id}`,input)
-    dispatch(signIn())
-    return response.data
-})
+export const setSelectedImage = createAsyncThunk('setSelectedImage', async (imageUrl) => {
+  return imageUrl;
+});
+
+export const updateUser = createAsyncThunk('api/updateUser', async (id, { getState }) => {
+  const { selectedImage } = getState().user; 
+  const input = { imgUrl: selectedImage }; 
+
+  const response = await axios.put(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/user/updateUser/${id}`, input);
+  return response.data;
+});
 
 export const signIn = createAsyncThunk(
   "getUserfunc",
   async (input, { dispatch }) => {
    const response = await axios.post(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/user/signIn`, input);
-   console.log(response,"this is from the store");
-   await AsyncStorage.setItem('type',JSON.stringify( response.data));
+   console.log(response.data.type,"this is from the store");
 
   
 return response.data
   }
 );
 
-
+export const logOut = createAsyncThunk(
+  "logOut",
+  async (_, { dispatch }) => {
+    await signOut(auth);
+    await clearToken();
+  }
+);
 
 const UserSlice = createSlice({
     name: "user",
     initialState,
-    reducers: {},
+    reducers: {
+      save:(state,action)=>{
+        state.userInfo=action.payload
+      },
+     
+    },
     extraReducers(builder) {
       builder.addCase(fetchUsers.fulfilled, (state, action) => {
         state.data = action.payload;
@@ -67,13 +85,18 @@ const UserSlice = createSlice({
       builder.addCase(addUser.fulfilled, (state, action) => {
         state.data = action.payload;
       });
+      builder.addCase(setSelectedImage.fulfilled, (state, action) => {
+        state.selectedImage = action.payload;
+      });
       builder.addCase(updateUser.fulfilled, (state, action) => {
         state.data = action.payload;
       });
       builder.addCase(deleteUser.fulfilled, (state, action) => {
         state.data = action.payload;
       })
-     
+      builder.addCase(logOut.fulfilled, (state, action) => {
+        state.userInfo = {};
+      });
     }
   });
   const getUserSlice = createSlice({
@@ -101,4 +124,7 @@ const UserSlice = createSlice({
      
     }
   });
+  
+  export const {save}= UserSlice.actions;
+  // export const { logOut } = getUserSlice.actions
   export default {user:UserSlice.reducer,getUser:getUserSlice.reducer} 

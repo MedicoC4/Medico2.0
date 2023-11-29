@@ -1,7 +1,13 @@
 import "./landing.css";
 import "atropos/css";
 import "aos/dist/aos.css";
-import React, { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  useContext,
+} from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ScrollSmoother } from "gsap-trial/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -20,6 +26,7 @@ import dashboad from "../../assets/images/Dashboardaaaaaa.png";
 import Logo from "../../assets/images/logo.svg";
 import wave from "../../assets/images/wave.svg";
 import { AuthContext } from "../../context/AuthContext";
+import { useUserData } from "../../context/UserDataContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,7 +34,7 @@ const Landing = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { dispatch } = useContext(AuthContext)
+  const { dispatch } = useContext(AuthContext);
 
   const [wordIndex, setWordIndex] = useState(0);
   const words = ["Operations", "Efficiency", "Workflow"];
@@ -39,6 +46,7 @@ const Landing = () => {
   const [error, setError] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { userData, updateUserData } = useUserData();
 
   // modal begin
 
@@ -48,31 +56,44 @@ const Landing = () => {
     return emailRegex.test(email);
   };
 
-  const handleSignIn = () => {
-    if (!isEmailValid(email)) {
-      // Display an error message for an invalid email format
-      setError(true);
-      console.log("aaa");
-      return;
-    }
-  
-    setConfirmLoading(true); // Set loading state before attempting authentication
-  
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        dispatch({ type: "LOGIN", payload: user })
+  const handleSignIn = async () => {
+    try {
+      if (!isEmailValid(email)) {
+        setError(true);
+        console.log("aaa");
+        return;
+      }
+
+      setConfirmLoading(true);
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      const check = await axios.get(
+        `http://127.0.0.1:1128/api/user/checkMail/${user.email}`
+      );
+      const userData = check.data
+      if (check.data.email === user.email && check.data.type == "pharmacy" && check.data.Pharmacy.isverified) {
+        dispatch({ type: "LOGIN", payload: user });
         setOpen(false);
         setConfirmLoading(false);
-        navigate("/dashboard");
-      })
-      .catch((error) => {
+        updateUserData(check.data)
+        console.log(userData);
+        navigate(`/dashboard`, {state:{userData: userData}});
+      } else {
         setError(true);
         setConfirmLoading(false);
-        console.log(error);
-      });
+      }
+    } catch (error) {
+      setError(true);
+      setConfirmLoading(false);
+      console.error(error);
+    }
   };
-  
 
   const showModal = () => {
     setOpen(true);
@@ -215,7 +236,9 @@ const Landing = () => {
                         type="text"
                         class="input_field"
                         id="email_field"
-                        onChange={(e) => {setEmail(e.target.value)}}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                        }}
                       />
                     </div>
                     <div class="input_container">

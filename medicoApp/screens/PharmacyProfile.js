@@ -20,38 +20,13 @@ const PharmacyProfile = ({navigation}) => {
           name: 'Gripex',
           image: 'https://galpharma.tn/wp-content/uploads/2019/09/Gripex-Adulte-12.jpg', // Replace with actual image URL
         },
-        // Add more medicines here...
+        
       ];
 
   return (
     <View style={styles.container}
     >
     <SafeAreaView>
-
-          <View style={styles.header}>
-            <Text style={styles.pharmaciesText}>Foulen Pharmacy</Text>
-            <View style={styles.icons}>
-                <TouchableOpacity>
-                    <View style={styles.iconContainer}>
-                        <Icon name="bell-o" size={25} color="grey" style={styles.icons} />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                    <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name="cart-outline" size={25} color="grey" />
-                    </View>
-                </TouchableOpacity>
-            </View>
-        </View>
-        <View style={styles.searchContainer}>
-            <Image source={require('../assets/lense.png')} style={styles.searchIcon} />
-            <TextInput
-                style={styles.searchBar}
-                placeholder="Search..."
-                // onChangeText={text => setSearch(text)}
-                // value={search}
-                />
-        </View>
                 <ScrollView style={{flexGrow:1,
                 height:height*0.8}}>
                     

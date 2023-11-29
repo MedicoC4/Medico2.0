@@ -1,4 +1,4 @@
-const {Doctor, User , Record} = require('../database/index')
+const {Doctor, User ,Speciality, Record} = require('../database/index')
 const { Op } = require("sequelize");
 
 module.exports = {
@@ -10,28 +10,42 @@ module.exports = {
                 },
                 include:Doctor
               })
-              
-
             res.json(getAll)
         }catch(err){
             console.log("Error al obtener todos los usuarios")
             throw err;
         }
     },
-    getOne : async(req,res)=>{
+    getOne: async (req, res) => {
         try {
-        const oneDoc = await Doctor.findAll({where: {id : req.params.id}}); 
-            res.json(oneDoc);
+          const getUser = await User.findOne({ where: { email: req.params.email } });
+      
+          if (!getUser) {
+            return res.status(404).json({ message: 'User not found' });
+          }
+      
+          if (!getUser.DoctorId) {
+            return res.status(400).json({ message: 'User does not have a DoctorId' });
+          }
+      
+          const oneDoc = await Doctor.findOne({ where: { id: getUser.DoctorId } });
+      
+          if (!oneDoc) {
+            return res.status(404).json({ message: 'Doctor not found' });
+          }
+      
+          res.json(oneDoc);
         } catch (error) {
-            throw error
+          console.error(error);
+          res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+      },
     drop : async(req , res)=>{
         try {
             await Doctor.destroy({where:{ id: req.params.id}})
             res.json('Deleted')
         } catch (error) {
-            throw err;
+            throw error;
         }
       },
       change : async(req,res)=>{
@@ -78,8 +92,7 @@ module.exports = {
         try {
             console.log(req.body);
              const oneDoc = await User.findOne({where: {email : req.body.email}});
-             const doc = await Doctor.update({specialityId :req.body.specialityId,},{where: {id : oneDoc.DoctorId}});
-            // const doc = await Doctor.update(req.body, {where: {id : oneDoc.DoctorId}});
+             const doc = await Doctor.update({specialityId :req.body},{where: {id : oneDoc.DoctorId}});
             res.send(doc);
         } catch (error) {
             throw error
@@ -101,15 +114,16 @@ module.exports = {
         }
     },
 
-    // recordsDoc : async (req ,res)=>{
-    //    try {
-    //     const record = await Record.create(req.body)
-    //    res.json(record)
-    //    } catch (error) {
-    //     throw error
-    //    }
-    // },
-
+   docImage : async (req, res) => {
+    try {
+    const oneDoc = await User.findOne({where: {email : req.body.email}});
+    const doc = await Doctor.update({imageUrl:req.body.imageUrl},{where: {id : oneDoc.DoctorId}});
+    res.send(doc);
+    } catch (error) {
+        throw error
+    }
+   },
+   
 
     getAivableDoc: async (req, res) => {
         try {
@@ -124,4 +138,102 @@ module.exports = {
           throw new Error(error);
         }
       },
+      getAivableDocMapeed: async (req, res) => {
+        try {
+          const getAll = await User.findAll({
+            where: {
+              type: "doctor",
+            },
+            include: [
+              {
+                model: Doctor,
+                where: {
+                  isVerified: {[Op.like]:req.params.verifyDoctorr},
+                  isBlocked: {[Op.like]:req.params.blockDoctorr},
+                  type: {[Op.like]:req.params.mapDocType}
+                },
+                include: [
+                  {
+                    model: Speciality,
+                  },
+                ],
+              },
+            ],
+          });
+          const structeredData = getAll.map((e)=>{
+            return{
+                id: e.id,
+                name:e.Doctor.fullname,
+                imageUrl: e.Doctor.imageUrl,
+                type: e.Doctor.type,
+                availability: true,
+                latitude: e.Doctor.latitude,
+                longitude: e.Doctor.longitude,
+                adress: e.email,
+                speciality:e.Doctor.speciality.name
+            }
+          })
+      
+          res.json(structeredData);
+        } catch (err) {
+            throw new Error(err)
+        }
+      },
+      getAivableDocMapeedAll: async (req, res) => {
+        try {
+          const getAll = await User.findAll({
+            where: {
+              type: "doctor",
+            },
+            include: [
+              {
+                model: Doctor,
+                where: {
+                  isVerified: {[Op.like]:req.params.verifyDoctorrAll},
+                  isBlocked: {[Op.like]:req.params.blockDoctorrAll},
+                },
+                include: [
+                  {
+                    model: Speciality,
+                  },
+                ],
+              },
+            ],
+          });
+          const structeredData = getAll.map((e)=>{
+            return{
+                id: e.id,
+                name:e.Doctor.fullname,
+                imageUrl: e.Doctor.imageUrl,
+                type: e.Doctor.type,
+                availability: true,
+                latitude: e.Doctor.latitude,
+                longitude: e.Doctor.longitude,
+                adress: e.email,
+                speciality:e.Doctor.speciality.name
+            }
+          })
+      
+          res.json(structeredData);
+        } catch (err) {
+            throw new Error(err)
+        }
+      },
+      verficationDoc: async (req, res) => {
+        try {
+          const oneDoc = await User.findOne({ where: { email: req.body.email } });
+          const docc = await Doctor.findOne({ where: { id: oneDoc.DoctorId } });
+          console.log('========>', docc.isverified);
+          const doc = await Doctor.update(
+            { isverified: !docc.isverified },
+            { where: { id: oneDoc.DoctorId } }
+          );
+      
+
+          const updatedDoc = await Doctor.findOne({ where: { id: oneDoc.DoctorId } });
+          res.json(updatedDoc);
+        } catch (error) {
+          throw error;
+        }
+      }
 }

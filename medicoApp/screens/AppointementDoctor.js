@@ -14,14 +14,19 @@ import { Picker } from "@react-native-picker/picker";
 
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
-import { Avatar, Badge, Icon, withBadge } from "react-native-elements";
+// import { Avatar, Badge, Icon, withBadge } from "react-native-elements";
 const { width, height } = Dimensions.get("window");
 import { auth } from "../firebase-config";
+import * as Animatable from 'react-native-animatable';
+import { useDispatch, useSelector } from "react-redux";
+import { saveMap } from '../redux/doctorSlicer';
+import { useNavigation } from '@react-navigation/native';
 
 
 import axios from "axios";
 import COLORS from "../constants/colors";
 import { firebase } from "@react-native-firebase/database";
+import AnimatedLottieView from "lottie-react-native";
 const AppointementList = () => {
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(true);
@@ -33,7 +38,19 @@ const AppointementList = () => {
   const [idOfHour, setIdOfHour] = useState(0);
   const [idOfAppoint, setIdOfAppoint] = useState(0);
   const [btnFilterModal, setBtnFilterModal] = useState(false);
-  const dropDownRef = useRef(null);
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [estimatedDuration, setEstimatedDuration] = useState(null);
+  const [isDistance, setIsDistance] = useState(null);
+  
+  const navigation = useNavigation()
+ 
+  const [oneUser,setOneUser]=useState({
+    longitude:0,
+    latitude:0,
+    id:0
+  })
+  const dropdownRef = useRef(null);
+  const [mapModalVisible, setMapModalVisible] = useState(false);
 
   const [saveData, setSaveData] = useState({
     userName: "",
@@ -42,6 +59,18 @@ const AppointementList = () => {
     createdDate: "",
     createdHour: "",
   });
+  const dispatch = useDispatch();
+
+  const showMapModal = () => {
+    setMapModalVisible(true);
+  };
+
+  const hideMapModal = () => {
+    setMapModalVisible(false);
+  };
+  const userToMap=(lat,long,idUser,userName,docName)=>{
+    dispatch(saveMap({longitude:long,latitude:lat,id:idUser,name:userName,dotorName:docName}))
+  }
 
   //   const fetchData = async () => {
   //     try {
@@ -52,6 +81,78 @@ const AppointementList = () => {
   //       throw new Error(error);
   //     }
   //   };
+
+  const toggleDropdown = () => {
+    if (isDropdownVisible) {
+      dropdownRef.current.fadeOutLeftBig(900).then(() => {
+        setDropdownVisible(false);
+      });
+    } else {
+      setDropdownVisible(true);
+      dropdownRef.current.slideInLeft(900).then(() => {
+        setDropdownVisible(true);
+      });
+    }
+  };
+
+  const getTime = async (docLat, docLong, desLat, desLong) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${docLat},${docLong}&destination=${desLat},${desLong}&key=AIzaSyA6k67mLz5qFbAOpq2zx1GBX9gXqNBeS-Y`
+      );
+      const data = await response.json();
+  
+      if (data.status === "OK" && data.routes.length > 0 && data.routes[0].legs.length > 0) {
+        const duration = data.routes[0].legs[0].duration.text;
+        setEstimatedDuration(duration);
+      } else if (data.status === "ZERO_RESULTS") {
+        console.warn("No route found between the specified points.");
+        setEstimatedDuration(null); 
+      } else {
+        console.error("Error calculating route: ", data.status);
+      }
+    } catch (error) {
+      console.error("Error fetching route data: ", error);
+    }
+  };
+  
+  const calculateDistanceMap = async (docLat, docLong, desLat, desLong) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${docLat},${docLong}&destinations=${desLat},${desLong}&key=AIzaSyA6k67mLz5qFbAOpq2zx1GBX9gXqNBeS-Y`
+      );
+      const data = await response.json();
+  
+      if (
+        data.status === "OK" &&
+        data.rows.length > 0 &&
+        data.rows[0].elements.length > 0 &&
+        data.rows[0].elements[0].distance
+      ) {
+        const distance = data.rows[0].elements[0].distance.text;
+        setIsDistance(distance);
+      } else if (data.status === "ZERO_RESULTS") {
+        console.warn("No distance information available between the specified points.");
+        setIsDistance(null); // Reset the distance
+      } else {
+        console.error("Error calculating distance: ", data.status);
+      }
+    } catch (error) {
+      console.error("Error fetching distance data: ", error);
+    }
+  };
+  
+
+
+  const slideInLeft = {
+    from: { left: -200 },
+    to: { left: 0 },
+  };
+
+  const slideOutLeft = {
+    from: { left: 0 },
+    to: { left: -200 },
+  };
   const fetchAllData = async () => {
     try {
       const email = auth.currentUser.email;
@@ -65,6 +166,17 @@ const AppointementList = () => {
       throw new Error(error);
     }
   };
+
+
+  const filterAppoint =async(body)=>{
+    try {
+      const email = auth.currentUser.email
+      const x = await axios.get(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/appointement/filter/${body}/${email}`)
+      setData(x.data)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 
   const updateStatus = async (idH) => {
     try {
@@ -89,6 +201,15 @@ const AppointementList = () => {
     }
   };
 
+  const getUser = async (id) => {
+    try {
+      const response = await axios.get(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/user/getOneById/${id}`)
+      setOneUser({longitude:response.longitude,latitude:response.latitude,id:response.id});
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   useEffect(() => {
     // fetchData();
     fetchAllData();
@@ -106,11 +227,39 @@ const AppointementList = () => {
       <Text style={{ paddingBottom: 40, fontSize: 35, fontWeight: "bold" }}>
         Appointment List
       </Text>
-      <View style={{paddingRight:280,paddingBottom:5}}>
-       <TouchableOpacity onPress={()=>setBtnFilterModal(!btnFilterModal)}>
+      <View style={{paddingLeft:280,paddingBottom:5}}>
+       {!isDropdownVisible?<TouchableOpacity onPress={toggleDropdown}>
         <Image style={{height:45,width:45}} source={require("../assets/filtreOff.png")}/>
-        </TouchableOpacity>
-        </View>
+        </TouchableOpacity>:<TouchableOpacity onPress={toggleDropdown}>
+        <Image style={{height:45,width:45}} source={require("../assets/filtreOn.png")}/>
+        </TouchableOpacity>}
+        </View>    
+        <Animatable.View
+      ref={dropdownRef}
+      style={{
+        position: 'absolute',
+        top: 150,
+        left: isDropdownVisible ? 0 : -290,
+        width: 290,
+        height: 70,
+        backgroundColor: 'white',
+        padding: 10,
+        borderRadius: 5,
+        elevation: 5,
+        justifyContent: 'center',
+        borderTopRightRadius: 50,
+        borderBottomRightRadius: 50,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <TouchableOpacity onPress={() => fetchAllData()}><Text>All</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => filterAppoint("pending")}><Text>Pending</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => filterAppoint("Accepted")}><Text>Accepted</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => filterAppoint("Rejected")}><Text>Rejected</Text></TouchableOpacity>
+    </Animatable.View>
       <FlatList
         data={data} 
         keyExtractor={(appointment) => String(appointment.id)}
@@ -291,11 +440,7 @@ const AppointementList = () => {
                   flexDirection: "row",
                 }}
               >
-                <Badge
-                  badgeStyle={{ height: 22, width: 85 }}
-                  value={<Text style={{ color: "white" }}>{appointment.status==="pending"?"Pending":appointment.status==="Accepted"?"Accepted":appointment.status==="Rejected"?"Rejected":null}</Text>}
-                  status={ appointment.status==="pending"?"warning":appointment.status==="Accepted"?"success":appointment.status==="Rejected"?"error":null}
-                />
+              
               </View>
             </View>
             <View
@@ -438,7 +583,9 @@ const AppointementList = () => {
                     source={require("../assets/email.png")}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity
+                onPress={()=>{setOneUser({longitude:appointment.User.longitude,latitude:appointment.User.latitude,id:appointment.User.id,name:appointment.User.username});userToMap(appointment.User.latitude,appointment.User.longitude,appointment.User.id,appointment.User.username,appointment.Doctor.fullname);getTime(appointment.Doctor.latitude,appointment.Doctor.longitude,appointment.User.latitude,appointment.User.longitude);calculateDistanceMap(appointment.Doctor.latitude,appointment.Doctor.longitude,appointment.User.latitude,appointment.User.longitude);showMapModal();console.log(appointment.Doctor.latitude,appointment.Doctor.longitude,appointment.User.latitude,appointment.User.longitude,"thisssssssssss");}}
+                >
                   <Image
                     style={{ width: 48, height: 48 }}
                     source={require("../assets/multiple.png")}
@@ -866,6 +1013,115 @@ const AppointementList = () => {
           </View>
         </View>
       </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={mapModalVisible}
+        onRequestClose={hideMapModal}
+      >
+        <View style={stylesModalMap.modalContainer}>
+          <View style={stylesModalMap.modalContent}>
+            <View >
+      <AnimatedLottieView
+        source={require('../assets/Animation - 1700485749110.json')}
+        autoPlay
+        loop
+        style={{ width: 220, height: 220 }}
+      />
+    </View>
+         <View>
+            <Text style={{
+                        color: "#677294",
+                        fontSize: 17,
+                        fontWeight: "bold",
+                        textAlign: "center",
+                      }}>Confirm navigation to {oneUser.name}'s location? </Text>
+            <Text style={{
+                        color: "#677294",
+                        fontSize: 17,
+                        fontWeight: "bold",
+                        textAlign: "center",
+                      }}>The distance is approximately {isDistance} with an estimated travel time of {estimatedDuration}.</Text>
+         </View>
+            <View style={{flexDirection:"row",gap:20,alignItems:"center"}}>
+            {/* <TouchableOpacity onPress={hideMapModal}>
+              <Text>Confirme</Text>
+            </TouchableOpacity> */}
+         
+                        <View
+                        style={{
+                          width: "45%",
+                          backgroundColor: COLORS.primary,
+                          height: 45,
+                          borderRadius: 50,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={()=>{hideMapModal();navigation.navigate('mapDirection')
+                        }}
+                        >
+                          <Text
+                            style={{
+                              color: "white",
+                              fontWeight: "bold",
+                              fontSize: 20,
+                            }}
+                          >
+                            Navigate
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View
+                        style={{
+                          width: "45%",
+                          backgroundColor: "white",
+                          height: 45,
+                          borderRadius: 50,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          borderWidth: 2,
+                          borderColor: "#f20404",
+                          borderStyle: "solid",
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={{}}
+                          onPress={hideMapModal}
+                        >
+                          <Text
+                            style={{
+                              color: "#f20404",
+                              fontWeight: "bold",
+                              fontSize: 20,
+                            }}
+                          >
+                            Close
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                        {/* <TouchableOpacity
+                          style={{}}
+                          onPress={() => onPress={hideMapModal}}
+                        >
+                          <Text
+                            style={{
+                              color: "#f20404",
+                              fontWeight: "bold",
+                              fontSize: 20,
+                            }}
+                          >
+                            Close
+                          </Text>
+                        </TouchableOpacity> */}
+            {/* <TouchableOpacity onPress={hideMapModal}>
+              <Text>Close</Text>
+            </TouchableOpacity> */}
+            </View>
+          </View>
+        </View>
+      </Modal>
             </View>
           </View>
         </View>
@@ -973,6 +1229,31 @@ flex:1  },
     backgroundColor: 'lightblue',
     padding: 10,
     borderRadius: 5,
+  },
+});
+
+const stylesModalMap = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+    height:520,
+    width:300,
+    flexDirection:"column",
+    justifyContent:"space-between",
+    alignItems:"center"
   },
 });
 

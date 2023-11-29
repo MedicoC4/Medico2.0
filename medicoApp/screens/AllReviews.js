@@ -12,19 +12,23 @@ import NavigationBar from '../components/NavigationBar'
 const {width,height}=Dimensions.get('window')
 const AllReviews = ({navigation,route}) => {
     const {data} = route.params
-    const dispatch=useDispatch()
-    const reviews=useSelector((state)=>state.docRev.data)
-    const userN=useSelector((state)=>state.user.data)
 
-    console.log('hello',userN);
+    console.log("this is the data",data);
+    const dispatch=useDispatch()
+    const reviews=useSelector((state)=>state.docRev?.data)
+
 
     console.log("those are the reviews",reviews)
-    const [client,setClient]=useState(0)
 
-
+    const calculateAverage=()=>{
+        const totalRating = reviews.reduce((acc, curr) => acc + curr.rating, 0)
+        const averageRating = totalRating / reviews.length | 0
+      
+        return averageRating.toFixed(1)
+      }
 
     const fetchReviews= ()=>{
-        dispatch(fetchDocReviews(data.id))
+        dispatch(fetchDocReviews(data?.id))
     }
 
     useEffect(() => {
@@ -122,7 +126,7 @@ const AllReviews = ({navigation,route}) => {
                     <Text style={{
                         fontSize:20,
                         fontWeight:600
-                    }}>Dr. {data.fullname}</Text>
+                    }}>Dr. {data?.fullname}</Text>
                     <Text style={{
                         fontSize:15,
                         fontWeight:400,
@@ -148,7 +152,7 @@ const AllReviews = ({navigation,route}) => {
                             />
                             <Text style={{
                                 fontWeight:600
-                            }}>Doctor</Text>
+                            }}>{data?.type}</Text>
                         </View>
                         <View style={{
                             paddingLeft:20,
@@ -188,12 +192,12 @@ const AllReviews = ({navigation,route}) => {
                             color:COLORS.white,
                             fontSize:20,
                             fontWeight:600
-                        }}>5.0</Text>
+                        }}>{calculateAverage()}</Text>
                     </View>
                     <Text style={{
                         color:COLORS.grey,
                         fontWeight:600
-                    }}>150 Reviews</Text>
+                    }}>{reviews.length} Reviews</Text>
                 </View>
 
 
@@ -223,13 +227,14 @@ const AllReviews = ({navigation,route}) => {
             flexGrow:1
             
         }}>
-            {reviews.reverse().map((review, index) => (
+            {reviews.map((review, index) => (
           <ReviewCardDoctor key={review.id} review={review} />
         ))}
         </ScrollView>
         </View>
         <NavigationBar/>
     </View>
+   
   )
 }
 

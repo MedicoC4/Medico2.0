@@ -1,14 +1,35 @@
 import "./home.css";
-import React from "react";
-import { Outlet } from "react-router-dom";
+import React, { useState } from "react";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import SideNav from "../../components/sideNav/SideNav.jsx";
 import moneySVG from "../../assets/images/money.svg";
 import syncIcon from "../../assets/images/sync.svg";
 import arrowUp from "../../assets/images/arrow-up.svg";
 import arrowDown from "../../assets/images/arrow-down.svg";
 import BarChar from "../../components/charts/barChart.jsx";
-
+import { useUserData } from "../../context/UserDataContext.js";
+import { Navigation, Pagination, Scrollbar, A11y } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/scrollbar";
 const LandingPage = () => {
+  const { userData, updateUserData } = useUserData();
+
+  console.log(userData);
+
+  const slides = [];
+  for (let i = 0; i < 12; i++) {
+    slides.push(
+      <SwiperSlide key={`slide-${i}`} style={{ listStyle: "none" }}>
+        <div className="slide">
+          <h3>{i}</h3>
+        </div>
+      </SwiperSlide>
+    );
+  }
+
   return (
     <>
       <Outlet />
@@ -69,70 +90,66 @@ const LandingPage = () => {
             <div class="item-4">
               <div className="feedBacks">
                 <h1>Feedbacks</h1>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="avatar"></div>
-                  <div>
-                    <p>John Doe</p>
-                    <p>on Product -3600</p>
-                    <p>Great product, thank you!</p>
-                  </div>
-                </div>
+                <Swiper
+                  modules={[Navigation, Pagination, Scrollbar, A11y]}
+                  spaceBetween={50}
+                  slidesPerView={1}
+                  navigation
+                  pagination={{ clickable: true }}
+                  onSwiper={(swiper) => console.log(swiper)}
+                  onSlideChange={() => console.log("slide change")}
+                >
+                  <SwiperSlide>
+                    <div>
+                      <div className="avatar"></div>
+                      <div>
+                        <p>John Doe</p>
+                        <p>on Product -3600</p>
+                        <p>Great product, thank you!</p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                  <SwiperSlide>
+                    <div>
+                      <div className="avatar"></div>
+                      <div>
+                        <p>John Doe</p>
+                        <p>on Product -3600</p>
+                        <p>Great product, thank you!</p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                  <SwiperSlide>
+                    <div>
+                      <div className="avatar"></div>
+                      <div>
+                        <p>John Doe</p>
+                        <p>on Product -3600</p>
+                        <p>Great product, thank you!</p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                  <SwiperSlide>
+                    <div>
+                      <div className="avatar"></div>
+                      <div>
+                        <p>John Doe</p>
+                        <p>on Product -3600</p>
+                        <p>Great product, thank you!</p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                  <SwiperSlide>
+                    <div>
+                      <div className="avatar"></div>
+                      <div>
+                        <p>John Doe</p>
+                        <p>on Product -3600</p>
+                        <p>Great product, thank you!</p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                </Swiper>
               </div>
             </div>
             <div class="item-5">
@@ -182,6 +199,7 @@ const LandingPage = () => {
           </div> */}
           </div>
         </div>
+        <Outlet />
       </div>
     </>
   );

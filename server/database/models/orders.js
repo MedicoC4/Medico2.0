@@ -1,12 +1,5 @@
-const { v4: uuidv4 } = require('uuid');
 module.exports = (Sequelize, DataTypes) => {
   const Orders = Sequelize.define("Orders", {
-    order_id: {
-      type: DataTypes.UUID,
-      defaultValue: () => uuidv4(),
-      primaryKey: true,
-      allowNull: false,
-    },
     quantityOrdered: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -16,7 +9,7 @@ module.exports = (Sequelize, DataTypes) => {
       defaultValue: "Pending",
     },
     livraisonStatus: {
-        type: DataTypes.ENUM('Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'),
+        type: DataTypes.ENUM('Pending', 'Processing', 'Out for Delivery', 'Delivered'),
         defaultValue: "Pending",
     },
     tracking_number: {
@@ -52,6 +45,10 @@ module.exports = (Sequelize, DataTypes) => {
     prescription: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    isPayed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   });
   return Orders;
