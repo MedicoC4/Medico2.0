@@ -1,0 +1,54 @@
+.sideNav {
+  position: fixed;
+  background-color: #216a72;
+  height: 100vh;
+  width: 7.3vw;
+  transition: 0.3s;
+  padding-left: 0.6rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+}
+
+.Links {
+  text-decoration: none;
+  color: #FFFFFF;
+}
+
+.sideNav > ul {
+  display: flex;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3rem;
+}
+
+.sideNav:hover {
+  height: 100vh;
+  width: 20.9vw;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  width: 500px;
+}
+
+.icon {
+  height: 30px;
+  width: 30px;
+}
+
+.list-item > li {
+  list-style: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  width: 500px;
+}
+
+.sideNav:hover .list-item > li {
+  opacity: 1;
+}
