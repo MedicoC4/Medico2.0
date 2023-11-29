@@ -1,16 +1,27 @@
 import { StyleSheet, Text, View,Image,TouchableOpacity,Dimensions } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import COLORS from '../constants/colors'
-
 const {width,height}= Dimensions.get('window')
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { save } from '../redux/doctorSlicer';
+
 
 
 const DoctorCard = ({doctor}) => {
+
+
+    console.log('this is doctor in the card',doctor);
+
+
   const navigation = useNavigation();
+const dispatch = useDispatch()
 
 
+const handleID=()=>{
+    dispatch(save(doctor.DoctorId))
+  }
 
   return (
     <View style={{
@@ -40,7 +51,7 @@ const DoctorCard = ({doctor}) => {
 
             }}>
             <Image
-            source={require('../assets/hero3.jpg')}
+            source={{ uri: doctor.Doctor.imageUrl }}
             style={{width: width*0.2,
                 height: height*0.09,
                 justifyContent: "center",
@@ -71,7 +82,10 @@ const DoctorCard = ({doctor}) => {
         gap:10,
         alignItems:'center'}}>
         <Icon name="star" size={15} color="#FFD700" />
-        <Text>3.5</Text>
+        <Text>{(doctor.Doctor.rating).toFixed(1)}</Text>
+
+
+        
       </View>
             </View>
             <TouchableOpacity
@@ -113,7 +127,7 @@ const DoctorCard = ({doctor}) => {
                     alignItems:'center',
                     borderBottomLeftRadius:20,
                 }}
-                onPress={()=>navigation.navigate('DocProfileNew',{data:doctor})}>
+                onPress={()=>navigation.navigate('ProfileDocStatic',{data:doctor})}>
                     <Text
                     style={{
                         color:COLORS.white,
@@ -131,8 +145,10 @@ const DoctorCard = ({doctor}) => {
                     flexDirection:'row',
                     gap:10,
                     borderBottomRightRadius:20
-
-                }}>
+                }}
+                
+                    onPress={()=>{handleID();navigation.navigate('appointmentClient')}}
+                >
                 <Image
                 source={require('../assets/book.png')}
                 style={{

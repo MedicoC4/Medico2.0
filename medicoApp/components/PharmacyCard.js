@@ -1,17 +1,28 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet,TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from "@react-navigation/native";
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 const PharmacyCard = ({ pharmacy }) => {
+  const navigation = useNavigation();
+
   return (
-    <View style={styles.card}>
-      <Image source={{ uri: pharmacy.imageUrl }} style={styles.image} />
+    <TouchableOpacity
+    activeOpacity={1}
+    onPress={()=>navigation.navigate('PharProf',{pharmacy:pharmacy})}
+    >
+    <View style={styles.card}
+    >
+      <Image source={{ uri: pharmacy?.imageUrl }} style={styles.image} />
       <View style={styles.infoContainer}>
         <View style={styles.nameRatingContainer}>
-          <Text style={styles.name}>{pharmacy.PHname}</Text>
+          <Text style={styles.name}>{pharmacy?.PHname}'s Pharmacy</Text>
           <View style={styles.ratingContainer}>
             <Icon name="star" size={15} color="#FFD700" />
-            <Text style={styles.rating}>4.5</Text>
+            <Text style={styles.rating}>{pharmacy?.rating}</Text>
           </View>
         </View>
         <View style={styles.distanceContainer}>
@@ -20,30 +31,30 @@ const PharmacyCard = ({ pharmacy }) => {
         </View>
       </View>
     </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'column',
-    margin: 10,
-    padding: 10,
+    margin: width * 0.03,
+    padding: width * 0.03,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: width * 0.05,
     elevation: 3,
     alignItems: 'center',
-    height: 255, // Default height
-    width: 300, // Default width
+    height: height * 0.32, 
+    width: width * 0.8, 
   },
   image: {
-    width: 280,
-    height: 165,
-    borderRadius: 20,
-    // marginTop: 10,
+    width: width * 0.7, 
+    height: height * 0.2, 
+    borderRadius: width * 0.05,
   },
   infoContainer: {
-    width: '100%', // Take up remaining space
-    padding: 10,
+    width: '100%', 
+    padding: width * 0.03,
   },
   nameRatingContainer: {
     flexDirection: 'row',
@@ -51,17 +62,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   name: {
-    fontSize: 18,
+    fontSize: width * 0.045,
     fontWeight: 'bold',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 5,
-    padding: 3,
-    borderColor: '#808080', // Grey border color
-    borderWidth: 1, // Border width
+    borderRadius: width * 0.01,
+    padding: width * 0.007,
+    borderColor: '#808080', 
+    borderWidth: width * 0.0025, 
   },
   rating: {
     marginLeft: 5,
@@ -71,14 +82,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     marginTop: 5,
-    backgroundColor: '#ddf0ee', // Light green background color
+    backgroundColor: '#ddf0ee', 
     borderRadius: 5,
     padding: 3,
-    alignSelf: 'flex-start', // Align self to the start of the parent container
+    alignSelf: 'flex-start', 
   },
   distance: {
     marginLeft: 5,
-    color: '#2d958c', // Changed color here
+    color: '#2d958c', 
   },
 });
 

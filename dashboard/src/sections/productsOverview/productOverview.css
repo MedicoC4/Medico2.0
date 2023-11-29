@@ -1,0 +1,55 @@
+.product_container_header {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    align-items: center;
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+}
+
+.add_product  {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: space-between;
+    position: relative;
+    box-sizing: border-box;
+    gap: 1rem;
+    -webkit-tap-highlight-color: transparent;
+    outline: 0px;
+    border: 0px currentcolor;
+    margin: 0px;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    text-decoration: none;
+    font-weight: 700;
+    line-height: 1.71429;
+    font-size: 0.875rem;
+    text-transform: unset;
+    font-family: "Public Sans", sans-serif;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-right: 12px;
+    padding-left: 8px;
+    border-radius: 8px;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    box-shadow: none;
+    color: rgb(255, 255, 255);
+    background-color: rgb(33, 43, 54);
+}
+
+.add_product:hover {
+    background-color: rgb(69, 79, 91)
+}
+.add_product > img {
+    height: 22px;
+    width: 22px;
+}
+
+.product_container_header > p {
+    margin: 0;
+}

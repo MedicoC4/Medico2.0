@@ -27,20 +27,6 @@ const AllPharmacies = () => {
     fetch1();
   }, []);
   
-
-
-  const medicines = [
-    {
-      name: 'Doliprane 1000',
-      image: 'https://www.med.tn/image-medicament-9816dd007411506ab2ce1249e99d2c8c.jpg', // Replace with actual image URL
-    },
-    {
-      name: 'Gripex',
-      image: 'https://galpharma.tn/wp-content/uploads/2019/09/Gripex-Adulte-12.jpg', // Replace with actual image URL
-    },
-    // Add more medicines here...
-  ];
-
   const [search, setSearch] = useState('');
     const [filteredPharmacies, setFilteredPharmacies] = useState([]);
 
@@ -62,7 +48,7 @@ const AllPharmacies = () => {
                         <Icon name="bell-o" size={25} color="grey" style={styles.icon} />
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('orderDetails')}>
                     <View style={styles.iconContainer}>
                         <MaterialCommunityIcons name="cart-outline" size={25} color="grey" />
                     </View>

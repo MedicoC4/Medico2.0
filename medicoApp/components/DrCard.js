@@ -1,16 +1,19 @@
 import React, { useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 
 const DoctorCard = ({doctor}) => {
     return (
       <View style={styles.card}>
-        {/* <Image source={{ uri: doctor.imageUrl }} style={styles.image} /> */}
+        <Image source={{ uri: doctor.Doctor.imageUrl }} style={styles.image} />
         <View style={styles.infoContainer}>
           <View style={styles.nameRatingContainer}>
-            <Text style={styles.name}>{doctor.fullname}</Text>
-            {doctor.isverified && (
+            <Text style={styles.name}>{doctor.Doctor.fullname}</Text>
+            {doctor.Doctor.isverified && (
               <View style={styles.ratingContainer}>
                 <Icon name="check-circle" size={15} color="#2d958c" />
                 <Text style={styles.rating}>Verified</Text>
@@ -25,24 +28,23 @@ const DoctorCard = ({doctor}) => {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'column',
-    margin: 10,
-    padding: 10,
+    margin: width * 0.03,
+    padding: width * 0.03,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: width * 0.05,
     elevation: 3,
     alignItems: 'center',
-    height: 255, // Default height
-    width: 300, // Default width
+    height: height * 0.3, 
+    width: width * 0.8, 
   },
   image: {
-    width: 280,
-    height: 165,
-    borderRadius: 20,
-    // marginTop: 10,
+    width: width * 0.7, 
+    height: height * 0.2, 
+    borderRadius: width * 0.05,
   },
   infoContainer: {
-    width: '100%', // Take up remaining space
-    padding: 10,
+    width: '100%', 
+    padding: width * 0.03,
   },
   nameRatingContainer: {
     flexDirection: 'row',
@@ -50,20 +52,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   name: {
-    fontSize: 18,
+    fontSize: width * 0.045,
     fontWeight: 'bold',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 5,
-    padding: 3,
+    borderRadius: width * 0.0125,
+    padding: width * 0.0075,
     borderColor: '#808080', // Grey border color
-    borderWidth: 1, // Border width
+    borderWidth: width * 0.0025, // Border width
   },
   rating: {
-    marginLeft: 5,
+    padding: width * 0.001,
   },
 });
 

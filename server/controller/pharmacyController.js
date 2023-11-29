@@ -13,6 +13,30 @@ module.exports = {
         throw err;
       }
     },
+    getOne: async (req, res) => {
+      try {
+        const getUser = await User.findOne({ where: { email: req.params.email } });
+    
+        if (!getUser) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+    
+        if (!getUser.PharmacyId) {
+          return res.status(400).json({ message: 'User does not have a PharmacyId' });
+        }
+    
+        const onePharm = await Pharmacy.findOne({ where: { id: getUser.PharmacyId } });
+    
+        if (!onePharm) {
+          return res.status(404).json({ message: 'pharmacy not found' });
+        }
+    
+        res.json(onePharm);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+      }
+    },
     create: async (req, res) => {
       let pharmacyData = req.body;
      
@@ -70,6 +94,47 @@ module.exports = {
       throw new Error(error);
     }
   },
+  getAivablePharmaDayNight: async (req, res) => {
+    try {
+      const getPharma = await Pharmacy.findAll({
+        where: {
+        isBlocked: { [Op.like]: req.params.isBlockPharma },
+        isverified: { [Op.like]: req.params.isVerefPharma },
+        type:{[Op.like]: req.params.typeDN}
+        },
+      });
+      res.status(200).send(getPharma)
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+  getAivablePharmaDayNightMapped: async (req, res) => {
+    try {
+      const getPharma = await Pharmacy.findAll({
+        where: {
+        isBlocked: { [Op.like]: req.params.isBlockPharmaMapped },
+        isverified: { [Op.like]: req.params.isVerefPharmaMapped },
+        type:{[Op.like]: req.params.typeDNMapped}
+        },
+      });
+      const structeredData = getPharma.map((e)=>{
+        return{         
+          id: e.id,
+          name:e.PHname,
+          imageUrl: e.iimageUrl,
+          type: "Pharmacy",
+          availability: e.type,
+          latitude: e.latitude,
+          longitude: e.longitude,
+          adress: e.adress,
+          speciality:""
+        }
+      })
+      res.status(200).send(structeredData)
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
   updataLongLat:async (req, res) => {
     try {
       const longLat = await Pharmacy.update(req.body,{where:{id:req.params.idPharmcy}})
@@ -106,4 +171,60 @@ recordsDoc : async(req , res)=>{
       res.json(error)
   }
 },
+getAivablePharmaMapped: async (req, res) => {
+  try {
+    const getPharma = await Pharmacy.findAll({
+      where: {
+      isBlocked: { [Op.like]: req.params.blockPharmaMapped },
+      isverified: { [Op.like]: req.params.verefPharmaMapped },
+      },
+    });
+    const structeredData = getPharma.map((e)=>{
+      return{         
+        id: e.id,
+        name:e.PHname,
+        imageUrl: e.iimageUrl,
+        type: "Pharmacy",
+        availability: e.type,
+        latitude: e.latitude,
+        longitude: e.longitude,
+        adress: e.adress,
+        speciality:""
+      }
+    })
+    res.status(200).send(structeredData)
+  } catch (error) {
+    throw new Error(error);
+  }
+},
+verficationPharm: async (req, res) => {
+  try {
+    const onePharm = await User.findOne({ where: { email: req.body.email } });
+    const pharmm = await Pharmacy.findOne({ where: { id: onePharm.PharmacyId } });
+    console.log('========>', pharmm.isverified);
+    const doc = await Pharmacy.update(
+      { isverified: !pharmm.isverified },
+      { where: { id: onePharm.PharmacyId } }
+    );
+
+
+    const updatedDoc = await Pharmacy.findOne({ where: { id: onePharm.PharmacyId } });
+    res.json(updatedDoc);
+  } catch (error) {
+    throw error;
+  }
+},
+fetchAll: async (req, res) => {
+  try{
+      const getAll = await User.findAll({
+          where: {
+            type: "pharmacy"
+          },
+          include:Pharmacy
+        })
+      res.json(getAll)
+  }catch(err){
+      throw err;
+  }
+}
   };

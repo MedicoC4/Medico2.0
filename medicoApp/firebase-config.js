@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore,doc, setDoc, getDoc} from "@firebase/firestore";
-import { getAuth , GoogleAuthProvider } from "firebase/auth";
-
+import { getFirestore, doc, setDoc, getDoc } from "@firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCX4jPxFJQC5T1zDPzrKz3HRYQdeps2St4",
@@ -18,9 +18,6 @@ export const DB = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-
-
-
 export const createUserDocument = async (user, additionalData) => {
   if (!user) return;
 
@@ -29,7 +26,7 @@ export const createUserDocument = async (user, additionalData) => {
   const snapshot = await getDoc(userRef);
 
   if (!snapshot.exists()) {
-    const { email,number } = additionalData;
+    const { email, number } = additionalData;
 
     if (email) {
       // Check if email is defined before setting it
@@ -37,21 +34,21 @@ export const createUserDocument = async (user, additionalData) => {
         await setDoc(userRef, {
           email,
           number,
-          image:null,
+          image: null,
           createdAt: new Date(),
-          name:'flen',
-          age:null,
-          gender:null,
-          birhdate:null,
-          reviewId:null,
-          doctorId:null,
-          nurseId:null
+          name: "flen",
+          age: null,
+          gender: null,
+          birhdate: null,
+          reviewId: null,
+          doctorId: null,
+          nurseId: null,
         });
       } catch (error) {
-        console.log('Error in creating user', error);
+        console.log("Error in creating user", error);
       }
     } else {
-      console.log('Email is missing or undefined.');
+      console.log("Email is missing or undefined.");
     }
   }
 };
@@ -76,14 +73,9 @@ export const updateUserDocument = async (user, additionalData) => {
 
       await setDoc(userRef, updatedData);
     } else {
-      console.log('User document does not exist.');
+      console.log("User document does not exist.");
     }
   } catch (error) {
-    console.error('Error updating user document:', error);
+    console.error("Error updating user document:", error);
   }
 };
-
-
-
-
-

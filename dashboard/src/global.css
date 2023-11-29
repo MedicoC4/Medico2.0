@@ -1,0 +1,122 @@
+/* scrollbar */
+@import 'simplebar-react/dist/simplebar.min.css';
+/* src/global.css */
+
+
+/* styles/globals.css */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Add NextUI styles if needed */
+
+.orders_container {
+  box-shadow:
+    0 0 2px 0 rgba(145, 158, 171, 0.08),
+    0 12px 24px -4px rgba(145, 158, 171, 0.08);
+  max-width: 100%;
+}
+
+.order_table_header_container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.order_table_header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2.5rem;
+}
+
+.order_table_header > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.order_table_header > div > li {
+  list-style: none;
+  color: #73818e;
+}
+
+.num_order {
+  margin: 0;
+  height: 24px;
+  min-width: 24px;
+  line-height: 0;
+  border-radius: 6px;
+  cursor: default;
+  -webkit-box-align: center;
+  align-items: center;
+  white-space: nowrap;
+  display: inline-flex;
+  -webkit-box-pack: center;
+  justify-content: center;
+  text-transform: capitalize;
+  padding: 0px 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  color: rgb(255, 255, 255);
+}
+
+.num_order1 {
+  background-color: rgb(33, 43, 54);
+}
+
+.num_order2 {
+    background-color: #FFF1D6;
+    color: #b76e01;
+}
+
+.num_order3 {
+    background-color: #DBF6E5;
+    color: #279967;
+}
+
+.num_order3 {
+    background-color: #DBF6E5;
+    color: #D16661;
+}
+
+.loader {
+  display: block;
+  top: 30%;
+  left: 35%;
+  --height-of-loader: 4px;
+  --loader-color: #0071e2;
+  width: 300px;
+  height: var(--height-of-loader);
+  border-radius: 30px;
+  background-color: rgba(0,0,0,0.2);
+  position: relative; 
+}
+
+.loader::before {
+  content: "";
+  position: absolute;
+  background: var(--loader-color);
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  border-radius: 30px;
+  animation: moving 1s ease-in-out infinite;
+  ;
+}
+
+@keyframes moving {
+  50% {
+    width: 100%;
+  }
+
+  100% {
+    width: 0;
+    right: 0;
+    left: unset;
+  }
+}

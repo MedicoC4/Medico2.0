@@ -22,6 +22,7 @@ import axios from "axios";
 import useForm from "../../hooks/useForm";
 import validate from "../../utils/validate";
 import Input from "../../components/Input/Input";
+import { useUserData } from "../../context/UserDataContext.js";
 
 const initialState = {
   name: {
@@ -75,24 +76,32 @@ const initialState = {
 };
 
 const AddProduct = () => {
+  const { userData, updateUserData } = useUserData();
+  const [catregories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  console.log(selectedCategory);
+
+  console.log(userData);
 
   const [inputs, setInputs] = useState({
     productName: "",
-    description: "",
-    manufacturer: "",
-    packaging: "",
-    activeIngredients: "",
-    expiryDate: "",
     price: "",
     stock: "",
+    description: "",
+    manufacturer: "",
+    activeIngredients: "",
+    dosageForm: "",
     strength: "",
-    sideEffect:"",
+    packaging: "",
+    expiryDate: "",
+    imageURL:
+      "https://www.parafendri.tn/2330-medium_default/svr-sun-secure-blur-creme-mousse-spf50.jpg",
+    sideEffect: "",
     codebar: "",
-    productCategory: "",
-    imageURL: "https://www.parafendri.tn/2330-medium_default/svr-sun-secure-blur-creme-mousse-spf50.jpg",
+    PharmacyId: userData.Pharmacy.id,
+    CategoryId: "",
   });
-
-
+  console.log(inputs);
 
   const [file, setFile] = useState(null);
   console.log(file);
@@ -105,21 +114,32 @@ const AddProduct = () => {
     }));
   };
 
-  console.log(inputs);
-
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
-    setFile(selectedFile);
+    console.log("hello",selectedFile);
+    const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("upload_preset", "qyrzp0xv");
+        const response = await axios.post('https://api.cloudinary.com/v1_1/dp42uyqn5/upload',formData);
+        console.log(response.data.secure_url);
+          setFile(response.data.secure_url)
   };
+
+  console.log(auth.currentUser.email, "usersssssssssssssssss");
+
   const addProduct = () => {
     if (!file) {
       alert("Please upload an Image!");
       return;
     }
-  
-  const user = auth.currentUser;
+
+    const user = auth.currentUser;
     axios
-      .post("http://127.0.0.1:1128/api/Product/createProduct", {...inputs, imageURL: "https://www.parafendri.tn/2330-medium_default/svr-sun-secure-blur-creme-mousse-spf50.jpg" , email: user.email })
+      .post("http://127.0.0.1:1128/api/Product/createProduct", {
+        ...inputs,
+        imageURL:file,
+        email: user.email,
+      })
       .then((response) => {
         console.log("Product added successfully", response.data);
       })
@@ -127,7 +147,24 @@ const AddProduct = () => {
         console.error(err);
       });
   };
-  
+
+  const categories = async () => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:1128/api/Categories/getAll"
+      );
+      setCategories(response.data);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  console.log(catregories);
+
+  useEffect(() => {
+    categories();
+  }, []);
+
   
 
   return (
@@ -274,16 +311,31 @@ const AddProduct = () => {
             </div>
           </div>
           <div className="addproduct_input_div">
+            <p className="input_title_add">Dosage Form</p>
+            <input
+              type="text"
+              placeholder="Enter Dosage Form"
+              className="big_add_inputs"
+              name="dosageForm"
+              // value={formData.productDescription}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="addproduct_input_div">
             <p className="input_title_add">Category</p>
             <select
-              id=""
+              id="category"
               className="big_add_inputs"
-              name="productCategory"
+              name="CategoryId"
+              value={inputs.CategoryId}
               onChange={handleInputChange}
             >
-              <option value="category1">Category 1</option>
-              <option value="category2">Category 2</option>
-              <option value="category3">Category 3</option>
+              <option value="">Select a category</option>
+              {catregories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

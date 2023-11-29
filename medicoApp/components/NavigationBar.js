@@ -6,41 +6,43 @@ import lense from '../assets/lense.png'
 import store from '../assets/store.png'
 import account from '../assets/account.png'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { Storage } from 'expo-storage'
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
+
 
 const NavigationBar = () => {
   const navigation = useNavigation()
   const [selectedTab, setSelectedTab] = useState('')
   const [userType, setUserType] = useState('');
 
-  useEffect(() => {
-    // Fetch user type from AsyncStorage
-    const fetchUserType = async () => {
-      try {
-        const type = await AsyncStorage.getItem('type');
-        setUserType(type);
-      } catch (error) {
-        console.error('Error fetching user type', error);
-      }
-    };
 
-    fetchUserType();
-  }, []);
 
   const handlePress = (route, tabName) => {
     navigation.navigate(route)
     setSelectedTab(tabName)
   }
 
-  const fetchProfile = () => {
-    if (userType === 'doctor') {
+  const fetchUserType = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("type");
+      // const jsonValue = await Storage.getItem({ key: type });
+
+    //  jsonValue != null ? JsonValue) : null;
+     console.log("see the type",jsonValue);
+
+      setUserType(jsonValue);
       
-       navigation.navigate('DocProfileNew')
-    } else {
-  
-      navigation.navigate('userProfilePage')
+
+    } catch (error) {
+      console.error('Error fetching user type', error);
     }
   };
 
+  useEffect(() => {
+    fetchUserType();
+    }, []);
   const renderIcon = (source, tabName) => (
     <Image source={source} style={[styles.ic, { tintColor: selectedTab === tabName ? '#2d958c' : '#bdbdbd' }]} />
   )
@@ -59,10 +61,15 @@ const NavigationBar = () => {
         {renderIcon(store, "stores")}
         <Text style={selectedTab === "stores" ? styles.selectedText : styles.text}>Stores</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.item} onPress={() => handlePress("userProfilePage", "account")}>
+      {userType==='doctor' &&<TouchableOpacity style={styles.item} onPress={() => handlePress("DocProfileNew", "account")}>
         {renderIcon(account, "account")}
         <Text style={selectedTab === "account" ? styles.selectedText : styles.text}>Account</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
+      
+      {userType!=='doctor'  && userType&&<TouchableOpacity style={styles.item} onPress={() => handlePress("userProfilePage", "account")}>
+        {renderIcon(account, "account")}
+        <Text style={selectedTab === "account" ? styles.selectedText : styles.text}>Account</Text>
+      </TouchableOpacity>}
     </View>
   );
 }
@@ -72,9 +79,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor:'white',
-    borderRadius:5,
-    height:70,
-    paddingHorizontal:7,
+    borderRadius: width * 0.0125,
+    height: height * 0.0875,
+    paddingHorizontal: width * 0.0175,
     width: '100%', 
   },
   item: {
@@ -82,18 +89,18 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   ic: {
-    paddingLeft: 25,
-    width: 25, 
-    height: 25, 
+    paddingLeft: width * 0.0625,
+    width: width * 0.0625, 
+    height: width * 0.0625, 
   },
   text: {
-    fontSize: 15,
-    marginTop: 10,
+    fontSize: width * 0.0375,
+    marginTop: height * 0.0125,
     color: '#bdbdbd' 
   },
   selectedText: {
-    fontSize: 15,
-    marginTop: 10,
+    fontSize: width * 0.0375,
+    marginTop: height * 0.0125,
     color: '#2d958c'
   }
 });

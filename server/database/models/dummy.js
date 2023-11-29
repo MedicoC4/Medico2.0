@@ -10,6 +10,8 @@ const dummyOrders = [
     total: 50.99,
     acceptedAt: null,
     dilevredAt: null,
+    ProductId:1,
+    UserId:1
   },
   {
     quantityOrdered: 3,
@@ -19,6 +21,8 @@ const dummyOrders = [
     total: 30.49,
     acceptedAt: new Date("2023-01-15"),
     dilevredAt: null,
+    ProductId:2,
+    UserId:2
   },
   {
     quantityOrdered: 7,
@@ -28,6 +32,8 @@ const dummyOrders = [
     total: 70.25,
     acceptedAt: null,
     dilevredAt: null,
+    ProductId:3,
+    UserId:3
   },
   {
     quantityOrdered: 2,
@@ -37,6 +43,8 @@ const dummyOrders = [
     total: 20.99,
     acceptedAt: new Date("2023-02-10"),
     dilevredAt: new Date("2023-02-12"),
+    ProductId:4,
+    UserId:4
   },
   {
     quantityOrdered: 4,
@@ -362,87 +370,87 @@ const dummyOrders = [
   module.exports = {dummyPharmacies, dummyOrders, dummyProducts, dummyRecords, dummyReviews, dummyUsers, dummyMedicineCategories, dummyAvailabilityData, dummyDoctors, dummySpecialities  };
 
   
-  // User.bulkCreate(dummyUsers)
-  //   .then(() => {
-  //     console.log('User data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  User.bulkCreate(dummyUsers)
+    .then(() => {
+      console.log('User data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
     
-  // Order.bulkCreate(dummyOrders)
-  //   .then(() => {
-  //     console.log('Order data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Order.bulkCreate(dummyOrders)
+    .then(() => {
+      console.log('Order data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
 
-  // Pharmacy.bulkCreate(dummyPharmacies)
-  //   .then(() => {
-  //     console.log('Pharmacy data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Pharmacy.bulkCreate(dummyPharmacies)
+    .then(() => {
+      console.log('Pharmacy data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
 
-  // Products.bulkCreate(dummyProducts)
-  //   .then(() => {
-  //     console.log('Product data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Products.bulkCreate(dummyProducts)
+    .then(() => {
+      console.log('Product data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
 
-  //   Record.bulkCreate(dummyRecords)
-  //   .then(() => {
-  //     console.log('Records data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+    Record.bulkCreate(dummyRecords)
+    .then(() => {
+      console.log('Records data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
     
-  // Review.bulkCreate(dummyReviews)
-  //   .then(() => {
-  //     console.log('Review data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Review.bulkCreate(dummyReviews)
+    .then(() => {
+      console.log('Review data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
-  // Categories.bulkCreate(dummyMedicineCategories)
-  //   .then(() => {
-  //     console.log('categories data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Categories.bulkCreate(dummyMedicineCategories)
+    .then(() => {
+      console.log('categories data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
-  // Availability.bulkCreate(dummyAvailabilityData)
-  //   .then(() => {
-  //     console.log('availability data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Availability.bulkCreate(dummyAvailabilityData)
+    .then(() => {
+      console.log('availability data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
-  // Doctor.bulkCreate(dummyDoctors)
-  //   .then(() => {
-  //     console.log('Doctors data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Doctor.bulkCreate(dummyDoctors)
+    .then(() => {
+      console.log('Doctors data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });
 
-  // Speciality.bulkCreate(dummySpecialities)
-  //   .then(() => {
-  //     console.log('Specialties data created successfully.');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error creating dummy data:', error);
-  //   });
+  Speciality.bulkCreate(dummySpecialities)
+    .then(() => {
+      console.log('Specialties data created successfully.');
+    })
+    .catch((error) => {
+      console.error('Error creating dummy data:', error);
+    });

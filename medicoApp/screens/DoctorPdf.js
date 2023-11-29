@@ -18,9 +18,11 @@ import { auth } from "../firebase-config";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateRecordsPharm } from "../redux/pharmacySlicer";
+import { useNavigation } from "@react-navigation/native";
 const { width, height } = Dimensions.get("window");
 
 const DoctorPdf = () => {
+  const navigation = useNavigation();
   const dispatch = useDispatch();
   const [documents, setDocuments] = useState({ assets: [] });
   const [isButtonVisible, setIsButtonVisible] = useState(false);
@@ -47,7 +49,7 @@ const DoctorPdf = () => {
     }
   };
 
-  const sendDocuments = async () => {
+    const sendDocuments = async () => {
     const email = auth.currentUser.email;
     const typeLOgger = await AsyncStorage.getItem("type");
 
@@ -144,7 +146,12 @@ const DoctorPdf = () => {
         <Button
           title="Send Document(s)"
           style={{ width: width * 0.95 }}
-          onPress={sendDocuments}
+          onPress={()=>{
+            sendDocuments()
+        navigation.navigate('SendingDoc')
+          }
+          
+          }
         />
         {documents && documents.assets && documents.assets.length > 0 && (
           <FlatList

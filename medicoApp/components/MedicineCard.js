@@ -1,10 +1,13 @@
 import React, { useState }from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 
 
 const MedicineCard = ({ medecine }) => {
-  const [isAvailable, setIsAvailable] = useState(true); // Default to true
+  const [isAvailable, setIsAvailable] = useState(true); 
   return (
     <View style={styles.card}>
       <Image source={{ uri: medecine.imageURL }} style={styles.image} />
@@ -21,39 +24,43 @@ const MedicineCard = ({ medecine }) => {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'column',
-    margin: 10,
-    padding: 10,
+    margin: width * 0.03,
+    padding: width * 0.03,
     backgroundColor: '#fff',
     borderRadius: 20,
     elevation: 3,
     alignItems: 'center',
-    height: 255, // Default height
-    width: 300, // Default width
+    height: height * 0.3, 
+    width: width * 0.8, 
   },
   image: {
-    width: 280,
-    height: 165,
+    width: width * 0.7,
+    height: height * 0.2,
     borderRadius: 20,
   },
   infoContainer: {
-    width: '100%', // Take up remaining space
-    padding: 10,
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    width: '100%', 
+    padding: width * 0.03,
   },
   name: {
-    fontSize: 18,
+    fontSize: width * 0.05,
     fontWeight: 'bold',
+    flex: 1, 
   },
   statusContainer: {
     backgroundColor: '#ddf0ee',
     borderRadius: 5,
-    padding: 5,
-    marginTop: 10,
-    width: 100,
+    padding: width * 0.01,
+    width: width * 0.3,
     alignItems: 'center',
+    flexShrink: 1, 
   },
   statusText: {
     color: '#2d958c',
     fontWeight: 'bold',
+    fontSize: width * 0.04,
   },
 });
 

@@ -2,7 +2,7 @@ module.exports = (Sequelize, DataTypes) => {
     const Missing = Sequelize.define("Missing", {
         quota: {
         type: DataTypes.DOUBLE,
-        defaultValue: 0,
+        defaultValue: 1,
       },
       order: {
         type: DataTypes.INTEGER,

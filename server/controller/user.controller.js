@@ -1,4 +1,4 @@
-const { User ,Doctor} = require("../database/index");
+const { User, Doctor, Pharmacy } = require("../database/index");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -10,9 +10,32 @@ module.exports = {
       throw err;
     }
   },
+  getOne: async (req, res) => {
+    try {
+      const getOne = await User.findOne({
+        where: { email: req.params.email },
+      });
+      res.json(getOne);
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  checkUserCredit: async (req, res) => {
+    try {
+      const getOnee = await User.findOne({
+        where: {
+          email: req.params.userMail,
+        },
+        include: [{ model: Pharmacy }],
+      });
+      res.json(getOnee);
+    } catch (error) {
+      throw error;
+    }
+  },
   create: async (req, res) => {
     let userData = req.body;
-
 
     try {
       const emailExist = await User.findOne({
@@ -35,7 +58,7 @@ module.exports = {
         where: { id: Number(id) },
       });
       res.json(updatedUser);
-      } catch (error) {
+    } catch (error) {
       throw error;
     }
   },
@@ -53,11 +76,10 @@ module.exports = {
   SignIn: async (req, res) => {
     let userData = req.body;
 
-
     try {
       const emailExist = await User.findOne({
         where: { email: userData.email },
-        include:Doctor
+        include: Doctor,
       });
       if (!emailExist) {
         return res.status(400).send({ message: "email is not valid" });
@@ -67,31 +89,41 @@ module.exports = {
       throw error;
     }
   },
-  updataLongLat:async (req, res) => {
+  updataLongLat: async (req, res) => {
     try {
-      const longLat = await User.update(req.body,{where:{id:req.params.idUse}})
-      res.json(longLat)
+      const longLat = await User.update(req.body, {
+        where: { id: req.params.idUse },
+      });
+      res.json(longLat);
     } catch (error) {
-      throw new Error(error)
+      throw new Error(error);
     }
   },
-  getUserNameById:async(req,res)=>{
-    const userId = req.params.id; // Assuming the user ID is part of the route params
+  getUserNameById: async (req, res) => {
+    const userId = req.params.id;
 
     try {
       const user = await User.findOne({
-        attributes: ['username'],
+        attributes: ["username"],
         where: { id: userId },
       });
-  
+
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
-  
+
       res.json({ username: user.username });
     } catch (error) {
-      console.error('Error fetching username:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      console.error("Error fetching username:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-  }
+  },
+  getUserByid: async (req, res) => {
+    try {
+      const user = await User.findOne({ where: { id: req.params.getById } });
+      res.json(user);
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
 };

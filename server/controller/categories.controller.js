@@ -14,11 +14,12 @@ module.exports = {
     try {
       let category = req.body;
       if (!category.name || !category.description) {
-        return res.status(400).send({ message: "try another name or description" });
+        return res.status(400).send({ message: "Faltan campos" });
       }
       const newCategory = await Categories.create(category);
       res.json(newCategory);
     } catch (err) {
+      console.log("Error al crear una categoria");
       throw err;
     }
   },

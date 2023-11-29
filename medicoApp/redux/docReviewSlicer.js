@@ -12,7 +12,8 @@ const initialState = {
 export const fetchDocReviews = createAsyncThunk(
     'reviews/fetchDocReviews',
     async (id) => {
-      const response = await axios.get(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/reviews/getAll/${id}`);
+      const response = await axios.get(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:1128/api/reviews/getAll/${id}`)
+      console.log('reviews from the slicer',response.data);
       return response.data;
     }
   );

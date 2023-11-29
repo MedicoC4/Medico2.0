@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View,Image,Dimensions,TouchableOpacity } from 'react-native'
 import React from 'react'
-// import { grey100 } from 'react-native-paper/lib/typescript/styles/themes/v2/colors'
 const {width,height} = Dimensions.get('window')
 
 const PharmacyCardProfile = ({ pharmacy }) => {
@@ -82,10 +81,13 @@ const PharmacyCardProfile = ({ pharmacy }) => {
 
 <TouchableOpacity style={{
     width:width*0.15,
-    height:height*0.06
+    height:height*0.06,
+    alignItems:'center',
+    justifyContent:'center',
+    paddingRight:45
 }}>
           <Image source={require('../assets/add.png')}
-          style={{height:height*0.065,
+          style={{height:height*0.045,
             width:width*0.1,
             borderRadius:12
         
